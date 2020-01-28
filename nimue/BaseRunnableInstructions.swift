@@ -3,6 +3,15 @@ enum RuntimeError: Error {
     case tooFewOperands
     case zeroDivision
     case unknownMessage(_ name: String)
+    case unknownInstruction(_ name: String)
+}
+
+func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    var str = ""
+    for arg in args {
+        str.append(arg.string(stack: context.stack))
+    }
+    print("\(str)");
 }
 
 struct RunContext {
@@ -11,6 +20,25 @@ struct RunContext {
     
     var stack = [Variant]()
     var backPointer: Int = 0 // (BP) End of parameters/start of local variables.
+    
+    mutating func run(_ handler: String, _ params: Variant...) throws {
+        for param in params.reversed() {
+            stack.append(param)
+        }
+        stack.append(Variant(params.count))
+        currentInstruction = script.functionStarts[handler]?.firstInstruction ?? -1
+        backPointer = 1
+
+        stack.append(Variant(-1))
+        stack.append(Variant(-1))
+        
+        while currentInstruction >= 0 {
+            guard let currInstr = script.instructions[currentInstruction] as? RunnableInstruction else { throw RuntimeError.unknownInstruction("\(script.instructions[currentInstruction])") }
+            try! currInstr.run(&self)
+        }
+    }
+        
+    static var builtinFunctions: [String:(_ : [Variant], _: inout RunContext) throws -> Void] = ["put": PrintInstructionFunc]
 }
 
 protocol RunnableInstruction {
@@ -125,12 +153,20 @@ extension JumpByInstruction : RunnableInstruction {
 
 extension CallInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        let newBackPointer = context.stack.count
-        context.stack.append(Variant(context.currentInstruction + 1))
-        context.stack.append(Variant(context.backPointer))
-        context.backPointer = newBackPointer
         if let destinationInstruction = context.script.functionStarts[message]?.firstInstruction {
+            let newBackPointer = context.stack.count
+            context.stack.append(Variant(context.currentInstruction + 1))
+            context.stack.append(Variant(context.backPointer))
+            context.backPointer = newBackPointer
             context.currentInstruction = destinationInstruction
+        } else if let builtinFunction = RunContext.builtinFunctions[message] {
+            let paramCount = context.stack.popLast()!.integer(stack: context.stack)
+            var args = [Variant]()
+            for _ in 0 ..< paramCount {
+                args.append(context.stack.popLast()!)
+            }
+            try builtinFunction(args, &context)
+            context.currentInstruction += 1
         } else {
             throw RuntimeError.unknownMessage(message)
         }

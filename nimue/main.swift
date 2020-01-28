@@ -249,15 +249,4 @@ do {
 print("\(script)")
 
 var context = RunContext(script: script)
-
-context.stack.append(Variant(0))
-context.currentInstruction = context.script.functionStarts["main"]?.firstInstruction ?? -1
-context.backPointer = 1
-
-context.stack.append(Variant(-2))
-context.stack.append(Variant(-2))
-
-while context.currentInstruction >= 0 {
-    guard let currInstr = context.script.instructions[context.currentInstruction] as? RunnableInstruction else { fatalError() }
-    try! currInstr.run(&context)
-}
+try! context.run("main")
