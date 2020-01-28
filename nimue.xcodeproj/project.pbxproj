@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5584237323E0E5E7006F3FF3 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5584237223E0E5E7006F3FF3 /* Parser.swift */; };
 		5595A36E23E01F6500A4A672 /* BaseInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5595A36D23E01F6500A4A672 /* BaseInstructions.swift */; };
 		5597179F23E0201E00C49992 /* Variant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597179E23E0201E00C49992 /* Variant.swift */; };
 		559717A123E020A200C49992 /* BaseRunnableInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559717A023E020A200C49992 /* BaseRunnableInstructions.swift */; };
@@ -28,6 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5584237223E0E5E7006F3FF3 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		5595A36D23E01F6500A4A672 /* BaseInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseInstructions.swift; sourceTree = "<group>"; };
 		5597179E23E0201E00C49992 /* Variant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Variant.swift; sourceTree = "<group>"; };
 		559717A023E020A200C49992 /* BaseRunnableInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseRunnableInstructions.swift; sourceTree = "<group>"; };
@@ -67,6 +69,7 @@
 			isa = PBXGroup;
 			children = (
 				55DF001C23DBCB97008700DA /* main.swift */,
+				5584237223E0E5E7006F3FF3 /* Parser.swift */,
 				5595A36D23E01F6500A4A672 /* BaseInstructions.swift */,
 				559717A023E020A200C49992 /* BaseRunnableInstructions.swift */,
 				5597179E23E0201E00C49992 /* Variant.swift */,
@@ -135,6 +138,7 @@
 			files = (
 				559717A123E020A200C49992 /* BaseRunnableInstructions.swift in Sources */,
 				5597179F23E0201E00C49992 /* Variant.swift in Sources */,
+				5584237323E0E5E7006F3FF3 /* Parser.swift in Sources */,
 				55DF001D23DBCB97008700DA /* main.swift in Sources */,
 				5595A36E23E01F6500A4A672 /* BaseInstructions.swift in Sources */,
 			);
