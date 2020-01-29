@@ -1,5 +1,5 @@
 on doThang appName, argument
-    put "It works!"
+    put "It works!", " sometimes... ", appName, " ", argument
 end doThang
 
 function main

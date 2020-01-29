@@ -14,7 +14,7 @@ func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     print("\(str)");
 }
 
-struct RunContext {
+public struct RunContext {
     var script: Script
     var currentInstruction: Int = 0 // Program Counter (PC)
     
@@ -186,7 +186,7 @@ extension ReturnInstruction : RunnableInstruction {
 
 extension StackValueBPRelativeInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        let actualIndex = context.backPointer - index
+        let actualIndex = context.backPointer + index
         guard actualIndex >= 0 && actualIndex < context.stack.count else { throw RuntimeError.stackIndexOutOfRange }
         context.stack.append(Variant(referenceIndex: actualIndex))
         context.currentInstruction += 1

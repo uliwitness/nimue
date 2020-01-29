@@ -1,27 +1,27 @@
 import Foundation
 
-enum ParseError: Error {
+public enum ParseError: Error {
     case expectedFunctionName
     case expectedEndOfLine
     case expectedIdentifier(string: String)
     case expectedOperator(string: String)
 }
 
-let identifierCS = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols)
-let whitespaceCS = CharacterSet.whitespaces
-let newlineCS = CharacterSet.newlines
+fileprivate let identifierCS = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
+fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols)
+fileprivate let whitespaceCS = CharacterSet.whitespaces
+fileprivate let newlineCS = CharacterSet.newlines
 
 struct Function {
     var firstInstruction: Int
     var variables = [String:Instruction]()
 }
 
-struct Script: CustomDebugStringConvertible {
+public struct Script: CustomDebugStringConvertible {
     var functionStarts = [String:Function]()
     var instructions = [Instruction]()
     
-    var debugDescription: String {
+    public var debugDescription: String {
         var descr = "Script {\n"
         
         var functionNames = [Int:String]()
@@ -46,7 +46,7 @@ struct Script: CustomDebugStringConvertible {
     }
 }
 
-extension Scanner {
+fileprivate extension Scanner {
     func expectNewline() throws {
         guard scanCharacters(from: newlineCS) != nil else {
             throw ParseError.expectedEndOfLine
@@ -122,10 +122,10 @@ extension Scanner {
     }
 }
 
-class Parser {
-    var script = Script()
+public class Parser {
+    public var script = Script()
     
-    func parseValue(scanner: Scanner, instructions: inout [Instruction]) throws -> Bool {
+    private func parseValue(scanner: Scanner, instructions: inout [Instruction], variables: inout [String: Instruction]) throws -> Bool {
         if scanner.scanString("\"") != nil {
             scanner.charactersToBeSkipped = nil
             defer { scanner.charactersToBeSkipped = whitespaceCS }
@@ -148,20 +148,26 @@ class Parser {
             } else {
                 instructions.append(PushIntegerInstruction(integer: Int(numStr) ?? 0))
             }
+        } else if let identStr = scanner.scanCharacters(from: identifierCS) {
+            if let identInstr = variables[identStr] {
+                instructions.append(identInstr)
+            } else { // TODO: Add implicitly declared variables.
+                instructions.append(PushStringInstruction(string: identStr))
+            }
         } else {
             return false
         }
         return true
     }
     
-    func parseCommand(scanner: Scanner, instructions: inout [Instruction]) throws {
+    private func parseCommand(scanner: Scanner, instructions: inout [Instruction], variables: inout [String: Instruction]) throws {
         let functionName = try scanner.scanIdentifier()
         
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
         while true {
             var paramInstructions = [Instruction]()
-            if try !parseValue(scanner: scanner, instructions: &paramInstructions) {
+            if try !parseValue(scanner: scanner, instructions: &paramInstructions, variables: &variables) {
                 break
             }
             params.append(paramInstructions)
@@ -185,7 +191,7 @@ class Parser {
         instructions.append(CallInstruction(message: functionName))
     }
     
-    func parseFunction(scanner: Scanner) throws {
+    private func parseFunction(scanner: Scanner) throws {
         var function = Function(firstInstruction: script.instructions.count)
         let functionName = try scanner.scanIdentifier()
         
@@ -206,7 +212,7 @@ class Parser {
         // Parse lines of commands until we hit the "end" token:
         while !scanner.haveIdentifier("end") {
             if scanner.haveNewline() { continue }
-            try parseCommand(scanner: scanner, instructions: &script.instructions)
+            try parseCommand(scanner: scanner, instructions: &script.instructions, variables: &function.variables)
             if scanner.scanCharacters(from: newlineCS) == nil {
                 throw ParseError.expectedOperator(string: "\n")
             }
