@@ -199,7 +199,7 @@ public class Parser {
         var parameterCount: Int = 0
         while let nextParamVariableName = try? scanner.scanIdentifier() {
             parameterCount += 1
-            function.variables[nextParamVariableName] = StackValueBPRelativeInstruction(index: -parameterCount - 1) // - 1 to account for parameter count at BP -1.
+            function.variables[nextParamVariableName] = ParameterInstruction(index: parameterCount)
             if !scanner.haveOperator(",") {
                 break
             } else {

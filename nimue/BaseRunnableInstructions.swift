@@ -197,8 +197,9 @@ extension ParameterInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
         if context.stack[context.backPointer - 1].integer(stack: context.stack) < index {
             context.stack.append(Variant())
+        } else {
+            context.stack.append(Variant(referenceIndex: context.backPointer - 1 - index)) // - 1 because param count is first.
         }
-        context.stack.append(Variant(referenceIndex: context.backPointer - 1 - index))
         context.currentInstruction += 1
     }
 }
