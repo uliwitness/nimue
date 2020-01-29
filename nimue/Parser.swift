@@ -14,7 +14,7 @@ fileprivate let newlineCS = CharacterSet.newlines
 
 struct Function {
     var firstInstruction: Int
-    var variables = [String:Instruction]()
+    var variables = Variables()
 }
 
 public struct Script: CustomDebugStringConvertible {
@@ -31,8 +31,8 @@ public struct Script: CustomDebugStringConvertible {
         
         var index = 0
         for instr in instructions {
-            if let funcName = functionNames[index] {
-                descr.append("\t\(funcName): \(functionStarts[funcName]?.variables ?? [:])\n")
+            if let funcName = functionNames[index], let funcInfo = functionStarts[funcName] {
+                descr.append("\t\(funcName): \(funcInfo.variables)\n")
             }
             
             descr.append("\t\t\(instr)\n")
@@ -122,10 +122,15 @@ fileprivate extension Scanner {
     }
 }
 
+struct Variables {
+    var mappings = [String: Instruction]()
+    var numVariables: Int = 0
+}
+
 public class Parser {
     public var script = Script()
     
-    private func parseValue(scanner: Scanner, instructions: inout [Instruction], variables: inout [String: Instruction]) throws -> Bool {
+    private func parseValue(scanner: Scanner, instructions: inout [Instruction], variables: inout Variables, writable: Bool = false) throws -> Bool {
         if scanner.scanString("\"") != nil {
             scanner.charactersToBeSkipped = nil
             defer { scanner.charactersToBeSkipped = whitespaceCS }
@@ -149,9 +154,12 @@ public class Parser {
                 instructions.append(PushIntegerInstruction(integer: Int(numStr) ?? 0))
             }
         } else if let identStr = scanner.scanCharacters(from: identifierCS) {
-            if let identInstr = variables[identStr] {
+            if let identInstr = variables.mappings[identStr] {
                 instructions.append(identInstr)
-            } else { // TODO: Add implicitly declared variables.
+            } else if writable {
+                variables.mappings[identStr] = StackValueBPRelativeInstruction(index: variables.numVariables + 2)
+                variables.numVariables += 1
+            } else {
                 instructions.append(PushStringInstruction(string: identStr))
             }
         } else {
@@ -160,8 +168,12 @@ public class Parser {
         return true
     }
     
-    private func parseCommand(scanner: Scanner, instructions: inout [Instruction], variables: inout [String: Instruction]) throws {
+    private func parseCommand(scanner: Scanner, instructions: inout [Instruction], variables: inout Variables) throws {
         let functionName = try scanner.scanIdentifier()
+        
+        if try functionName == "local" && parseValue(scanner: scanner, instructions: &instructions, variables: &variables, writable: true) {
+            return
+        }
         
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
@@ -195,11 +207,13 @@ public class Parser {
         var function = Function(firstInstruction: script.instructions.count)
         let functionName = try scanner.scanIdentifier()
         
+        script.instructions.append(ReserveStackInstruction(valueCount: 0))
+        
         // Parse list of parameter variable names:
         var parameterCount: Int = 0
         while let nextParamVariableName = try? scanner.scanIdentifier() {
             parameterCount += 1
-            function.variables[nextParamVariableName] = ParameterInstruction(index: parameterCount)
+            function.variables.mappings[nextParamVariableName] = ParameterInstruction(index: parameterCount)
             if !scanner.haveOperator(",") {
                 break
             } else {
@@ -218,10 +232,12 @@ public class Parser {
             }
         }
         
-        script.instructions.append(ReturnInstruction())
+        script.instructions.append(ReturnInstruction(numVariables: function.variables.numVariables))
         
         try scanner.expectIdentifier("end")
         try scanner.expectIdentifier(functionName)
+        
+        script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numVariables)
         
         // Add fully-parsed function to script:
         script.functionStarts[functionName] = function

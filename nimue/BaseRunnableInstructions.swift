@@ -175,6 +175,9 @@ extension CallInstruction : RunnableInstruction {
 
 extension ReturnInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
+        for _ in 0 ..< numVariables {
+            context.stack.removeLast()
+        }
         context.backPointer = context.stack.popLast()!.integer(stack: context.stack)
         context.currentInstruction = context.stack.popLast()!.integer(stack: context.stack)
         let paramCount = context.stack.popLast()!.integer(stack: context.stack)
@@ -200,6 +203,13 @@ extension ParameterInstruction : RunnableInstruction {
         } else {
             context.stack.append(Variant(referenceIndex: context.backPointer - 1 - index)) // - 1 because param count is first.
         }
+        context.currentInstruction += 1
+    }
+}
+
+extension ReserveStackInstruction : RunnableInstruction {
+    func run(_ context: inout RunContext) throws {
+        context.stack.append(contentsOf: Array(repeating: Variant(), count: valueCount))
         context.currentInstruction += 1
     }
 }

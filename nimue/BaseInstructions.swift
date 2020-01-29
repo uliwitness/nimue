@@ -60,7 +60,7 @@ struct CallInstruction: Instruction {
 }
 
 struct ReturnInstruction: Instruction {
-    
+    let numVariables: Int
 }
 
 /// Push a reference to the given stack value on the stack
@@ -73,4 +73,9 @@ struct StackValueBPRelativeInstruction: Instruction {
 /// or an empty string if there are fewer parameters.
 struct ParameterInstruction: Instruction {
     let index: Int
+}
+
+/// Push the given number of empty values on the stack
+struct ReserveStackInstruction: Instruction {
+    let valueCount: Int
 }
