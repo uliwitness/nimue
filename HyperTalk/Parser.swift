@@ -36,7 +36,7 @@ public struct Script: CustomDebugStringConvertible {
 
 struct Variables {
     var mappings = [String: Instruction]()
-    var numVariables: Int = 0
+    var numLocals: Int = 0
 }
 
 public class Parser {
@@ -57,9 +57,9 @@ public class Parser {
             if let identInstr = variables.mappings[identStr] {
                 instructions.append(identInstr)
             } else if writable {
-                let variableInstruction = StackValueBPRelativeInstruction(index: variables.numVariables + 2)
+                let variableInstruction = StackValueBPRelativeInstruction(index: variables.numLocals + 2)
                 variables.mappings[identStr] = variableInstruction
-                variables.numVariables += 1
+                variables.numLocals += 1
                 instructions.append(variableInstruction)
             } else {
                 instructions.append(PushStringInstruction(string: identStr))
@@ -160,12 +160,12 @@ public class Parser {
             try tokenizer.expectNewline()
         }
         
-        script.instructions.append(ReturnInstruction(numVariables: function.variables.numVariables))
+        script.instructions.append(ReturnInstruction(numVariables: function.variables.numLocals))
         
         try tokenizer.expectIdentifier("end")
         try tokenizer.expectIdentifier(functionName)
         
-        script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numVariables)
+        script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numLocals)
         
         // Add fully-parsed function to script:
         script.functionStarts[functionName] = function

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		558A683423E5EC61008266C0 /* HyperTalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; };
 		558A683923E5EC61008266C0 /* HyperTalkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558A683823E5EC61008266C0 /* HyperTalkTests.swift */; };
-		558A683B23E5EC61008266C0 /* HyperTalk.h in Headers */ = {isa = PBXBuildFile; fileRef = 558A682D23E5EC61008266C0 /* HyperTalk.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		558A684223E5EC6E008266C0 /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554DB00823E22EDE00319E6C /* Tokenizer.swift */; };
 		558A684323E5EC6E008266C0 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5584237223E0E5E7006F3FF3 /* Parser.swift */; };
 		558A684423E5EC6E008266C0 /* BaseInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5595A36D23E01F6500A4A672 /* BaseInstructions.swift */; };
@@ -66,7 +65,6 @@
 		554DB00823E22EDE00319E6C /* Tokenizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokenizer.swift; sourceTree = "<group>"; };
 		5584237223E0E5E7006F3FF3 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		558A682B23E5EC61008266C0 /* HyperTalk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HyperTalk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		558A682D23E5EC61008266C0 /* HyperTalk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HyperTalk.h; sourceTree = "<group>"; };
 		558A682E23E5EC61008266C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		558A683323E5EC61008266C0 /* HyperTalkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HyperTalkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		558A683823E5EC61008266C0 /* HyperTalkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperTalkTests.swift; sourceTree = "<group>"; };
@@ -114,7 +112,6 @@
 				5595A36D23E01F6500A4A672 /* BaseInstructions.swift */,
 				559717A023E020A200C49992 /* BaseRunnableInstructions.swift */,
 				5597179E23E0201E00C49992 /* Variant.swift */,
-				558A682D23E5EC61008266C0 /* HyperTalk.h */,
 				558A682E23E5EC61008266C0 /* Info.plist */,
 			);
 			path = HyperTalk;
@@ -173,7 +170,6 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				558A683B23E5EC61008266C0 /* HyperTalk.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
