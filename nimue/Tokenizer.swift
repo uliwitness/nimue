@@ -16,82 +16,6 @@ fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterS
 fileprivate let whitespaceCS = CharacterSet.whitespaces
 fileprivate let newlineCS = CharacterSet.newlines
 
-fileprivate extension Scanner {
-    func expectNewline() throws {
-        guard scanCharacters(from: newlineCS) != nil else {
-            throw TokenizerError.expectedEndOfLine
-        }
-    }
-    
-    func expectIdentifier(_ string: String) throws {
-        guard let ident = scanCharacters(from: identifierCS) else {
-            throw TokenizerError.expectedIdentifier(string: string)
-        }
-        guard ident.caseInsensitiveCompare(string) == .orderedSame else {
-            throw TokenizerError.expectedIdentifier(string: string)
-        }
-    }
-    
-    func expectOperator(_ string: String) throws {
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            throw TokenizerError.expectedOperator(string: string)
-        }
-        guard String(character) == string else {
-            throw TokenizerError.expectedOperator(string: string)
-        }
-    }
-    
-    func haveNewline() -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard scanCharacters(from: newlineCS) != nil else {
-            return false
-        }
-        return true
-    }
-    
-    func haveIdentifier(_ string: String) -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard let ident = scanCharacters(from: identifierCS) else {
-            return false
-        }
-        guard ident.caseInsensitiveCompare(string) == .orderedSame else {
-            return false
-        }
-        
-        return true
-    }
-    
-    func haveOperator(_ string: String) -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            return false
-        }
-        guard String(character) == string else {
-            return false
-        }
-        
-        return true
-    }
-    
-    func scanIdentifier() throws -> String {
-        guard let string = scanCharacters(from: identifierCS) else {
-            throw TokenizerError.expectedIdentifier(string: "")
-        }
-        return string
-    }
-    
-    func scanOperator() throws -> String {
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            throw TokenizerError.expectedOperator(string: "")
-        }
-        
-        return String(character)
-    }
-}
-
 struct Token {
     enum Kind {
         case quotedString(_: String)
@@ -105,7 +29,7 @@ struct Token {
     let offset: String.Index
 }
 
-class Tokenizer {
+class Tokenizer: CustomDebugStringConvertible {
     var tokens = [Token]()
     var currentIndex = 0
     
@@ -316,5 +240,32 @@ class Tokenizer {
             }
             currentIndex += 1
         }
+    }
+
+    var debugDescription: String {
+        var str = "Tokenizer {\n"
+        
+        for token in tokens {
+            switch token.kind {
+            case .symbol(let string):
+                if string == "\n" {
+                    str += "⮐\n"
+                } else {
+                    str += "[\(string)], "
+                }
+            case .quotedString(let string):
+                str += "\"\(string)\", "
+            case .unquotedString(let string):
+                str += "[\(string)], "
+            case .integer(let num):
+                str += "<\(num)>, "
+            case .double(let num):
+                str += "<\(num)>, "
+            }
+        }
+        
+        str += "\n}"
+        
+        return str
     }
 }

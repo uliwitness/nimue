@@ -3,7 +3,7 @@ do {
     
     let tokenizer = Tokenizer()
     try tokenizer.addTokens(for: text)
-    print("\(tokenizer.tokens)")
+    print("\(tokenizer)")
     
     let parser = Parser()
     try parser.parse(tokenizer)
