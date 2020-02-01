@@ -17,7 +17,7 @@ fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterS
 fileprivate let whitespaceCS = CharacterSet.whitespaces
 fileprivate let newlineCS = CharacterSet.newlines
 
-struct Token {
+public struct Token {
     enum Kind {
         case quotedString(_: String)
         case unquotedString(_: String)
@@ -30,15 +30,19 @@ struct Token {
     let offset: String.Index
 }
 
-class Tokenizer: CustomDebugStringConvertible {
-    var tokens = [Token]()
+public class Tokenizer: CustomDebugStringConvertible {
+    public var tokens = [Token]()
     var currentIndex = 0
     
     var isAtEnd: Bool {
         return currentIndex >= tokens.count
     }
     
-    func addTokens(for text: String) throws {
+    public init() {
+        
+    }
+    
+    public func addTokens(for text: String) throws {
         let scanner = Scanner(string: text)
         scanner.caseSensitive = false
         scanner.charactersToBeSkipped = whitespaceCS
@@ -243,7 +247,7 @@ class Tokenizer: CustomDebugStringConvertible {
         }
     }
 
-    var debugDescription: String {
+    public var debugDescription: String {
         var str = "Tokenizer {\n"
         
         var lastWasLineBreak = true

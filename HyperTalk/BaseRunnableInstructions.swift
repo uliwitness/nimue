@@ -26,13 +26,17 @@ func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
 }
 
 public struct RunContext {
-    var script: Script
+    public var script: Script
     var currentInstruction: Int = 0 // Program Counter (PC)
     
     var stack = [Variant]()
     var backPointer: Int = 0 // (BP) End of parameters/start of local variables.
     
-    mutating func run(_ handler: String, _ params: Variant...) throws {
+    public init(script: Script) {
+        self.script = script
+    }
+    
+    public mutating func run(_ handler: String, _ params: Variant...) throws {
         for param in params.reversed() {
             stack.append(param)
         }

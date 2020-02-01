@@ -1,4 +1,4 @@
-enum VariantError: Error {
+public enum VariantError: Error {
     case attemptToAccessSavedBackPointer
     case attemptToAccessSavedProgramCounter
     case attemptToAccessParameterCount
@@ -7,7 +7,7 @@ enum VariantError: Error {
     case expectedParameterCount
 }
 
-enum Value {
+public enum Value {
     case empty
     case string(_ value: String)
     case integer(_ value: Int)
@@ -18,10 +18,10 @@ enum Value {
     case parameterCount(_ : Int)
 }
 
-struct Variant {
+public struct Variant {
     var value: Value
     
-    func string(stack: [Variant]) throws -> String {
+    public func string(stack: [Variant]) throws -> String {
         switch value {
         case .empty:
             return ""
@@ -42,7 +42,7 @@ struct Variant {
         }
     }
     
-    func integer(stack: [Variant]) throws -> Int {
+    public func integer(stack: [Variant]) throws -> Int {
         switch value {
         case .empty:
             return 0
@@ -63,7 +63,7 @@ struct Variant {
         }
     }
     
-    func double(stack: [Variant]) throws -> Double {
+    public func double(stack: [Variant]) throws -> Double {
         switch value {
         case .empty:
             return 0.0
@@ -84,7 +84,7 @@ struct Variant {
         }
     }
     
-    func referenceIndex(stack: [Variant]) -> Int? {
+    public func referenceIndex(stack: [Variant]) -> Int? {
         if case let .reference(index) = value {
             return stack[index].referenceIndex(stack: stack) ?? index
         }
@@ -115,23 +115,23 @@ struct Variant {
         throw VariantError.expectedParameterCount
     }
     
-    init() {
+    public init() {
         value = .empty
     }
     
-    init(_ string: String) {
+    public init(_ string: String) {
         value = .string(string)
     }
     
-    init(_ integer: Int) {
+    public init(_ integer: Int) {
         value = .integer(integer)
     }
     
-    init(_ double: Double) {
+    public init(_ double: Double) {
         value = .double(double)
     }
     
-    init(referenceIndex refIndex: Int) {
+    public init(referenceIndex refIndex: Int) {
         value = .reference(originalIndex: refIndex)
     }
     

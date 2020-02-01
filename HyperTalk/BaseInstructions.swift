@@ -1,85 +1,85 @@
 
-protocol Instruction {
+public protocol Instruction {
     
 }
 
-struct PushStringInstruction: Instruction {
+public struct PushStringInstruction: Instruction {
     let string: String
 }
 
-struct PushIntegerInstruction: Instruction {
+public struct PushIntegerInstruction: Instruction {
     let integer: Int
 }
 
-struct PushParameterCountInstruction: Instruction {
+public struct PushParameterCountInstruction: Instruction {
     let parameterCount: Int
 }
 
-struct PushDoubleInstruction: Instruction {
+public struct PushDoubleInstruction: Instruction {
     let double: Double
 }
 
 /// Pops last 2 values on stack and pushes result.
-struct AddInstruction: Instruction {
+public struct AddInstruction: Instruction {
     
 }
 
 /// Pops last 2 values on stack and pushes result.
-struct SubtractInstruction: Instruction {
+public struct SubtractInstruction: Instruction {
     
 }
 
 /// Pops last 2 values on stack and pushes result.
-struct MultiplyInstruction: Instruction {
+public struct MultiplyInstruction: Instruction {
     
 }
 
 /// Pops last 2 values on stack and pushes result.
-struct DivideInstruction: Instruction {
+public struct DivideInstruction: Instruction {
     
 }
 
 /// Pops last 2 values on stack and pushes result.
-struct ConcatenateInstruction: Instruction {
+public struct ConcatenateInstruction: Instruction {
     
 }
 
 /// Assigns SP - 2 to SP - 3 (SP - 1 is param count, 2).
-struct AssignInstruction: Instruction {
+public struct AssignInstruction: Instruction {
     
 }
 
 /// Assigns SP - 2 to SP - 3 (SP - 1 is param count, 2).
 /// Follows references.
-struct CopyInstruction: Instruction {
+public struct CopyInstruction: Instruction {
     
 }
 
-struct JumpByInstruction: Instruction {
+public struct JumpByInstruction: Instruction {
     let instructionCount: Int
 }
 
-struct CallInstruction: Instruction {
+public struct CallInstruction: Instruction {
     let message: String
 }
 
-struct ReturnInstruction: Instruction {
+public struct ReturnInstruction: Instruction {
     let numVariables: Int
 }
 
 /// Push a reference to the given stack value on the stack
 /// Negative is parameters, positive is local variables.
-struct StackValueBPRelativeInstruction: Instruction {
+public struct StackValueBPRelativeInstruction: Instruction {
     let index: Int
 }
 
 /// Push a reference to the given parameter on the stack
 /// or an empty string if there are fewer parameters.
-struct ParameterInstruction: Instruction {
+public struct ParameterInstruction: Instruction {
     let index: Int
 }
 
 /// Push the given number of empty values on the stack
-struct ReserveStackInstruction: Instruction {
+public struct ReserveStackInstruction: Instruction {
     let valueCount: Int
 }

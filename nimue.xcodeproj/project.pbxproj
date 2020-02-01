@@ -7,16 +7,49 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		554DB00923E22EDE00319E6C /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554DB00823E22EDE00319E6C /* Tokenizer.swift */; };
-		558A681823E5BB03008266C0 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5584237223E0E5E7006F3FF3 /* Parser.swift */; };
-		558A681923E5BB07008266C0 /* BaseRunnableInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559717A023E020A200C49992 /* BaseRunnableInstructions.swift */; };
-		5595A36E23E01F6500A4A672 /* BaseInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5595A36D23E01F6500A4A672 /* BaseInstructions.swift */; };
-		5597179F23E0201E00C49992 /* Variant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597179E23E0201E00C49992 /* Variant.swift */; };
+		558A683423E5EC61008266C0 /* HyperTalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; };
+		558A683923E5EC61008266C0 /* HyperTalkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 558A683823E5EC61008266C0 /* HyperTalkTests.swift */; };
+		558A683B23E5EC61008266C0 /* HyperTalk.h in Headers */ = {isa = PBXBuildFile; fileRef = 558A682D23E5EC61008266C0 /* HyperTalk.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		558A684223E5EC6E008266C0 /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554DB00823E22EDE00319E6C /* Tokenizer.swift */; };
+		558A684323E5EC6E008266C0 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5584237223E0E5E7006F3FF3 /* Parser.swift */; };
+		558A684423E5EC6E008266C0 /* BaseInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5595A36D23E01F6500A4A672 /* BaseInstructions.swift */; };
+		558A684523E5EC6E008266C0 /* BaseRunnableInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559717A023E020A200C49992 /* BaseRunnableInstructions.swift */; };
+		558A684623E5EC6E008266C0 /* Variant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597179E23E0201E00C49992 /* Variant.swift */; };
+		558A684823E5F20D008266C0 /* HyperTalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; };
+		558A684923E5F20D008266C0 /* HyperTalk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		55DF001D23DBCB97008700DA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DF001C23DBCB97008700DA /* main.swift */; };
 		55DF002423DBD8BE008700DA /* example1.nim in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55DF002323DBD884008700DA /* example1.nim */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		558A683523E5EC61008266C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 558A682A23E5EC61008266C0;
+			remoteInfo = HyperTalk;
+		};
+		558A684A23E5F20D008266C0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 558A682A23E5EC61008266C0;
+			remoteInfo = HyperTalk;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
+		558A684C23E5F20E008266C0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				558A684923E5F20D008266C0 /* HyperTalk.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55DF001723DBCB97008700DA /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 12;
@@ -32,6 +65,12 @@
 /* Begin PBXFileReference section */
 		554DB00823E22EDE00319E6C /* Tokenizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tokenizer.swift; sourceTree = "<group>"; };
 		5584237223E0E5E7006F3FF3 /* Parser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
+		558A682B23E5EC61008266C0 /* HyperTalk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HyperTalk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		558A682D23E5EC61008266C0 /* HyperTalk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HyperTalk.h; sourceTree = "<group>"; };
+		558A682E23E5EC61008266C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		558A683323E5EC61008266C0 /* HyperTalkTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HyperTalkTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		558A683823E5EC61008266C0 /* HyperTalkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperTalkTests.swift; sourceTree = "<group>"; };
+		558A683A23E5EC61008266C0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5595A36D23E01F6500A4A672 /* BaseInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseInstructions.swift; sourceTree = "<group>"; };
 		5597179E23E0201E00C49992 /* Variant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Variant.swift; sourceTree = "<group>"; };
 		559717A023E020A200C49992 /* BaseRunnableInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseRunnableInstructions.swift; sourceTree = "<group>"; };
@@ -41,21 +80,70 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		55DF001623DBCB97008700DA /* Frameworks */ = {
+		558A682823E5EC61008266C0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		558A683023E5EC61008266C0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				558A683423E5EC61008266C0 /* HyperTalk.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55DF001623DBCB97008700DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				558A684823E5F20D008266C0 /* HyperTalk.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		558A682C23E5EC61008266C0 /* HyperTalk */ = {
+			isa = PBXGroup;
+			children = (
+				554DB00823E22EDE00319E6C /* Tokenizer.swift */,
+				5584237223E0E5E7006F3FF3 /* Parser.swift */,
+				5595A36D23E01F6500A4A672 /* BaseInstructions.swift */,
+				559717A023E020A200C49992 /* BaseRunnableInstructions.swift */,
+				5597179E23E0201E00C49992 /* Variant.swift */,
+				558A682D23E5EC61008266C0 /* HyperTalk.h */,
+				558A682E23E5EC61008266C0 /* Info.plist */,
+			);
+			path = HyperTalk;
+			sourceTree = "<group>";
+		};
+		558A683723E5EC61008266C0 /* HyperTalkTests */ = {
+			isa = PBXGroup;
+			children = (
+				558A683823E5EC61008266C0 /* HyperTalkTests.swift */,
+				558A683A23E5EC61008266C0 /* Info.plist */,
+			);
+			path = HyperTalkTests;
+			sourceTree = "<group>";
+		};
+		558A684723E5F20D008266C0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		55DF001023DBCB97008700DA = {
 			isa = PBXGroup;
 			children = (
 				55DF001B23DBCB97008700DA /* nimue */,
+				558A682C23E5EC61008266C0 /* HyperTalk */,
+				558A683723E5EC61008266C0 /* HyperTalkTests */,
 				55DF001A23DBCB97008700DA /* Products */,
+				558A684723E5F20D008266C0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -63,6 +151,8 @@
 			isa = PBXGroup;
 			children = (
 				55DF001923DBCB97008700DA /* nimue */,
+				558A682B23E5EC61008266C0 /* HyperTalk.framework */,
+				558A683323E5EC61008266C0 /* HyperTalkTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -71,11 +161,6 @@
 			isa = PBXGroup;
 			children = (
 				55DF001C23DBCB97008700DA /* main.swift */,
-				554DB00823E22EDE00319E6C /* Tokenizer.swift */,
-				5584237223E0E5E7006F3FF3 /* Parser.swift */,
-				5595A36D23E01F6500A4A672 /* BaseInstructions.swift */,
-				559717A023E020A200C49992 /* BaseRunnableInstructions.swift */,
-				5597179E23E0201E00C49992 /* Variant.swift */,
 				55DF002323DBD884008700DA /* example1.nim */,
 			);
 			path = nimue;
@@ -83,7 +168,54 @@
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		558A682623E5EC61008266C0 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				558A683B23E5EC61008266C0 /* HyperTalk.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		558A682A23E5EC61008266C0 /* HyperTalk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 558A683C23E5EC61008266C0 /* Build configuration list for PBXNativeTarget "HyperTalk" */;
+			buildPhases = (
+				558A682623E5EC61008266C0 /* Headers */,
+				558A682723E5EC61008266C0 /* Sources */,
+				558A682823E5EC61008266C0 /* Frameworks */,
+				558A682923E5EC61008266C0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HyperTalk;
+			productName = HyperTalk;
+			productReference = 558A682B23E5EC61008266C0 /* HyperTalk.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		558A683223E5EC61008266C0 /* HyperTalkTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 558A683F23E5EC61008266C0 /* Build configuration list for PBXNativeTarget "HyperTalkTests" */;
+			buildPhases = (
+				558A682F23E5EC61008266C0 /* Sources */,
+				558A683023E5EC61008266C0 /* Frameworks */,
+				558A683123E5EC61008266C0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				558A683623E5EC61008266C0 /* PBXTargetDependency */,
+			);
+			name = HyperTalkTests;
+			productName = HyperTalkTests;
+			productReference = 558A683323E5EC61008266C0 /* HyperTalkTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		55DF001823DBCB97008700DA /* nimue */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 55DF002023DBCB97008700DA /* Build configuration list for PBXNativeTarget "nimue" */;
@@ -91,10 +223,12 @@
 				55DF001523DBCB97008700DA /* Sources */,
 				55DF001623DBCB97008700DA /* Frameworks */,
 				55DF001723DBCB97008700DA /* CopyFiles */,
+				558A684C23E5F20E008266C0 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				558A684B23E5F20D008266C0 /* PBXTargetDependency */,
 			);
 			name = nimue;
 			productName = nimue;
@@ -111,6 +245,12 @@
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Uli Kusterer";
 				TargetAttributes = {
+					558A682A23E5EC61008266C0 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
+					558A683223E5EC61008266C0 = {
+						CreatedOnToolsVersion = 11.3.1;
+					};
 					55DF001823DBCB97008700DA = {
 						CreatedOnToolsVersion = 11.3.1;
 					};
@@ -130,27 +270,166 @@
 			projectRoot = "";
 			targets = (
 				55DF001823DBCB97008700DA /* nimue */,
+				558A682A23E5EC61008266C0 /* HyperTalk */,
+				558A683223E5EC61008266C0 /* HyperTalkTests */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		558A682923E5EC61008266C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		558A683123E5EC61008266C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		558A682723E5EC61008266C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				558A684523E5EC6E008266C0 /* BaseRunnableInstructions.swift in Sources */,
+				558A684323E5EC6E008266C0 /* Parser.swift in Sources */,
+				558A684223E5EC6E008266C0 /* Tokenizer.swift in Sources */,
+				558A684623E5EC6E008266C0 /* Variant.swift in Sources */,
+				558A684423E5EC6E008266C0 /* BaseInstructions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		558A682F23E5EC61008266C0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				558A683923E5EC61008266C0 /* HyperTalkTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		55DF001523DBCB97008700DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				554DB00923E22EDE00319E6C /* Tokenizer.swift in Sources */,
-				5597179F23E0201E00C49992 /* Variant.swift in Sources */,
-				558A681823E5BB03008266C0 /* Parser.swift in Sources */,
 				55DF001D23DBCB97008700DA /* main.swift in Sources */,
-				558A681923E5BB07008266C0 /* BaseRunnableInstructions.swift in Sources */,
-				5595A36E23E01F6500A4A672 /* BaseInstructions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		558A683623E5EC61008266C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 558A682A23E5EC61008266C0 /* HyperTalk */;
+			targetProxy = 558A683523E5EC61008266C0 /* PBXContainerItemProxy */;
+		};
+		558A684B23E5F20D008266C0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 558A682A23E5EC61008266C0 /* HyperTalk */;
+			targetProxy = 558A684A23E5F20D008266C0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		558A683D23E5EC61008266C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = HyperTalk/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		558A683E23E5EC61008266C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = HyperTalk/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalk;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		558A684023E5EC61008266C0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperTalkTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		558A684123E5EC61008266C0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperTalkTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		55DF001E23DBCB97008700DA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -289,6 +568,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		558A683C23E5EC61008266C0 /* Build configuration list for PBXNativeTarget "HyperTalk" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				558A683D23E5EC61008266C0 /* Debug */,
+				558A683E23E5EC61008266C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		558A683F23E5EC61008266C0 /* Build configuration list for PBXNativeTarget "HyperTalkTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				558A684023E5EC61008266C0 /* Debug */,
+				558A684123E5EC61008266C0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		55DF001423DBCB97008700DA /* Build configuration list for PBXProject "nimue" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

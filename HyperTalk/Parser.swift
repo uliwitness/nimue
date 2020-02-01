@@ -42,6 +42,10 @@ struct Variables {
 public class Parser {
     public var script = Script()
     
+    public init() {
+        
+    }
+    
     private func parseValue(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables, writable: Bool = false) throws -> Bool {
         if let str = try? tokenizer.expectString() {
             instructions.append(PushStringInstruction(string: str))
@@ -167,8 +171,7 @@ public class Parser {
         script.functionStarts[functionName] = function
     }
     
-    
-    func parse( _ tokenizer: Tokenizer) throws {
+    public func parse( _ tokenizer: Tokenizer) throws {
         while !tokenizer.isAtEnd {
             if tokenizer.isAtEnd { break }
             tokenizer.skipNewlines()
