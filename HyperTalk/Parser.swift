@@ -1,5 +1,25 @@
 import Foundation
 
+enum ParserValueKind {
+    case none
+    case expression
+    case container
+    case identifier(expected: [String])
+}
+
+public struct SyntaxElement {
+    var identifiers: [String]
+    var valueKind: ParserValueKind
+    var required: Bool = true
+    var parseState: Int = 0
+    var nextParseState: Int = 0
+}
+
+public struct Syntax {
+    var identifiers: [String]
+    var parameters: [SyntaxElement]
+}
+
 struct Function {
     var firstInstruction: Int
     var variables = Variables()
@@ -41,19 +61,26 @@ struct Variables {
 
 public class Parser {
     public var script = Script()
+    public var commandSyntaxes = [
+        Syntax(identifiers: ["put"], parameters: [
+            SyntaxElement(identifiers: [], valueKind: .expression),
+            SyntaxElement(identifiers: [], valueKind: .identifier(expected: ["into"])),
+            SyntaxElement(identifiers: [], valueKind: .container)
+        ])]
     
     public init() {
         
     }
     
     private func parseValue(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables, writable: Bool = false) throws -> Bool {
-        if let str = try? tokenizer.expectString() {
+        if tokenizer.isAtEnd { return false }
+        if let str = tokenizer.hasString(updateCurrentIndexOnMatch: true) {
             instructions.append(PushStringInstruction(string: str))
-        } else if let integer = try? tokenizer.expectInteger() {
+        } else if let integer = tokenizer.hasInteger(updateCurrentIndexOnMatch: true) {
             instructions.append(PushIntegerInstruction(integer: integer))
-        } else if let double = try? tokenizer.expectNumber() {
+        } else if let double = tokenizer.hasNumber(updateCurrentIndexOnMatch: true) {
             instructions.append(PushDoubleInstruction(double: double))
-        } else if let identStr = try? tokenizer.expectIdentifier() {
+        } else if let identStr = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true) {
             if let identInstr = variables.mappings[identStr] {
                 instructions.append(identInstr)
             } else if writable {
@@ -71,6 +98,57 @@ public class Parser {
     }
     
     private func parseCommand(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+        for commandSyntax in commandSyntaxes {
+            let originalIndex = tokenizer.currentIndex
+            if !tokenizer.hasIdentifiers(commandSyntax.identifiers, updateCurrentIndexOnMatch: true) {
+                continue
+            }
+            var paramInstructions = [[Instruction]]()
+            var paramCount = 0
+            var matchedAllParams = true
+            for paramSyntax in commandSyntax.parameters {
+                var valueInstructions = [Instruction]()
+                if !paramSyntax.identifiers.isEmpty && !tokenizer.hasIdentifiers(paramSyntax.identifiers, updateCurrentIndexOnMatch: true) {
+                    matchedAllParams = false
+                    break
+                }
+                switch paramSyntax.valueKind {
+                case .expression:
+                    if try !parseValue(tokenizer: tokenizer, instructions: &valueInstructions, variables: &variables) {
+                        matchedAllParams = false
+                    }
+                    paramCount += 1
+                case .container:
+                    if try !parseValue(tokenizer: tokenizer, instructions: &valueInstructions, variables: &variables, writable: true) {
+                        matchedAllParams = false
+                    }
+                    paramCount += 1
+                case .identifier(let expected):
+                    if !tokenizer.hasIdentifiers(expected, updateCurrentIndexOnMatch: true) {
+                        matchedAllParams = false
+                    } else {
+                        expected.reversed().forEach { valueInstructions.append(PushStringInstruction(string: $0)) }
+                        paramCount += expected.count
+                    }
+                case .none:
+                    break
+                }
+                if !matchedAllParams { break }
+                paramInstructions.append(valueInstructions)
+            }
+            if !matchedAllParams {
+                tokenizer.currentIndex = originalIndex
+                continue
+            }
+            
+            for valueInstructions in paramInstructions.reversed() {
+                instructions.append(contentsOf: valueInstructions)
+            }
+            instructions.append(PushParameterCountInstruction(parameterCount: paramCount))
+            instructions.append(CallInstruction(message: commandSyntax.identifiers.joined(separator: "")))
+            return
+        }
+        
         let functionName = try tokenizer.expectIdentifier()
         
         var ignoredInstructions = [Instruction]()
@@ -78,19 +156,11 @@ public class Parser {
             return
         }
 
-        if functionName == "put" {
+        if functionName == "output" {
             var params = [[Instruction]]()
             var paramInstructions = [Instruction]()
             guard try parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, writable: false) else { throw ParseError.expectedValue }
             params.append(paramInstructions);
-            
-            if let operation = try? tokenizer.expectIdentifier() {
-                params.append([PushStringInstruction(string: operation.lowercased())])
-            
-                paramInstructions = [Instruction]()
-                guard try parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, writable: true) else { throw ParseError.expectedValue }
-                params.append(paramInstructions);
-            }
 
             for paramInstructions in params.reversed() {
                 instructions.append(contentsOf: paramInstructions)
@@ -113,7 +183,7 @@ public class Parser {
                 break
             }
             params.append(paramInstructions)
-            if !tokenizer.hasSymbol(",") {
+            if tokenizer.hasSymbol(",") == nil {
                 break
             } else {
                 try tokenizer.expectSymbol(",")
@@ -141,10 +211,10 @@ public class Parser {
         
         // Parse list of parameter variable names:
         var parameterCount: Int = 0
-        while let nextParamVariableName = try? tokenizer.expectIdentifier() {
+        while let nextParamVariableName = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true) {
             parameterCount += 1
             function.variables.mappings[nextParamVariableName] = ParameterInstruction(index: parameterCount)
-            if !tokenizer.hasSymbol(",") {
+            if tokenizer.hasSymbol(",") == nil {
                 break
             } else {
                 try tokenizer.expectSymbol(",")
@@ -154,7 +224,7 @@ public class Parser {
         try tokenizer.expectNewline()
         
         // Parse lines of commands until we hit the "end" token:
-        while !tokenizer.hasIdentifier("end") {
+        while tokenizer.hasIdentifier("end") == nil {
             tokenizer.skipNewlines()
             try parseCommand(tokenizer: tokenizer, instructions: &script.instructions, variables: &function.variables)
             try tokenizer.expectNewline()
@@ -175,7 +245,7 @@ public class Parser {
         while !tokenizer.isAtEnd {
             if tokenizer.isAtEnd { break }
             tokenizer.skipNewlines()
-            let word = try? tokenizer.expectIdentifier()
+            let word = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true)
             switch word {
             case "on":
                 try parseFunction(tokenizer: tokenizer)

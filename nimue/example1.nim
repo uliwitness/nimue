@@ -1,11 +1,11 @@
 on doThang appName, argument, arg2, arg3
-    put "It works!"
-    put " sometimes... "
-    put appName
-    put argument
-    put arg3
+    output "It works!"
+    output " sometimes... "
+    output appName
+    output argument
+    output arg3
     put "foo" into fooLocalVar
-    put fooLocalVar
+    output fooLocalVar
 end doThang
 
 function main

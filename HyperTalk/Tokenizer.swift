@@ -91,19 +91,39 @@ public class Tokenizer: CustomDebugStringConvertible {
         throw ParseError.expectedIdentifier(string: expectedIdentifier ?? "")
     }
 
-    func hasIdentifier(_ expectedIdentifier: String? = nil) -> Bool {
-        if isAtEnd {
-            return false
-        }
+    func hasIdentifier(_ expectedIdentifier: String? = nil, updateCurrentIndexOnMatch: Bool = false) -> String? {
+        if isAtEnd { return nil }
         if case let .unquotedString(string) = tokens[currentIndex].kind {
             if expectedIdentifier == nil {
-                return true
+                if updateCurrentIndexOnMatch { currentIndex += 1 }
+                return string
             } else if let expectedIdentifier = expectedIdentifier, expectedIdentifier == string {
-                return true
+                if updateCurrentIndexOnMatch { currentIndex += 1 }
+                return string
             }
         }
         
-        return false
+        return nil
+    }
+
+    func hasIdentifiers(_ expectedIdentifiers: [String], updateCurrentIndexOnMatch: Bool = false) -> Bool {
+        var expectedIndex = 0
+        var searchIndex = currentIndex
+        while expectedIndex < expectedIdentifiers.count {
+            if isAtEnd { return false }
+            guard case let .unquotedString(string) = tokens[searchIndex].kind else { return false }
+            if expectedIdentifiers[expectedIndex] != string {
+                return false
+            }
+            searchIndex += 1
+            expectedIndex += 1
+        }
+        
+        if updateCurrentIndexOnMatch {
+            currentIndex = searchIndex
+        }
+        
+        return true
     }
 
     @discardableResult
@@ -112,27 +132,27 @@ public class Tokenizer: CustomDebugStringConvertible {
             throw ParseError.expectedString
         }
         if case let .quotedString(string) = tokens[currentIndex].kind {
-                currentIndex += 1
-                return string
+            currentIndex += 1
+            return string
         } else if allowUnquoted, case let .unquotedString(string) = tokens[currentIndex].kind {
-                currentIndex += 1
-                return string
+            currentIndex += 1
+            return string
         }
         
         throw ParseError.expectedString
     }
     
-    func hasString(allowUnquoted: Bool = false) -> Bool {
-        if isAtEnd {
-            return false
-        }
-        if case .quotedString(_) = tokens[currentIndex].kind {
-            return true
-        } else if allowUnquoted, case .unquotedString(_) = tokens[currentIndex].kind {
-            return true
+    func hasString(allowUnquoted: Bool = false, updateCurrentIndexOnMatch: Bool = false) -> String? {
+        if isAtEnd { return nil }
+        if case let .quotedString(string) = tokens[currentIndex].kind {
+            if updateCurrentIndexOnMatch { currentIndex += 1 }
+            return string
+        } else if allowUnquoted, case let .unquotedString(string) = tokens[currentIndex].kind {
+            if updateCurrentIndexOnMatch { currentIndex += 1 }
+            return string
         }
         
-        return false
+        return nil
     }
 
     func expectInteger() throws -> Int {
@@ -147,15 +167,14 @@ public class Tokenizer: CustomDebugStringConvertible {
         throw ParseError.expectedInteger
     }
     
-    func hasInteger() -> Bool {
-        if isAtEnd {
-            return false
-        }
-        if case .integer(_) = tokens[currentIndex].kind {
-            return true
+    func hasInteger(updateCurrentIndexOnMatch: Bool = false) -> Int? {
+        if isAtEnd { return nil }
+        if case let .integer(integer) = tokens[currentIndex].kind {
+            if updateCurrentIndexOnMatch { currentIndex += 1 }
+            return integer
         }
         
-        return false
+        return nil
     }
 
     func expectNumber() throws -> Double {
@@ -173,17 +192,17 @@ public class Tokenizer: CustomDebugStringConvertible {
         throw ParseError.expectedNumber
     }
     
-    func hasNumber() -> Bool {
-        if isAtEnd {
-            return false
-        }
-        if case .integer(_) = tokens[currentIndex].kind {
-            return true
-        } else if case .double(_) = tokens[currentIndex].kind {
-            return true
+    func hasNumber(updateCurrentIndexOnMatch: Bool = false) -> Double? {
+        if isAtEnd { return nil }
+        if case let .integer(integer) = tokens[currentIndex].kind {
+            if updateCurrentIndexOnMatch { currentIndex += 1 }
+            return Double(integer)
+        } else if case let .double(double) = tokens[currentIndex].kind {
+            if updateCurrentIndexOnMatch { currentIndex += 1 }
+            return double
         }
         
-        return false
+        return nil
     }
 
     @discardableResult
@@ -204,19 +223,19 @@ public class Tokenizer: CustomDebugStringConvertible {
         throw ParseError.expectedOperator(string: expectedSymbol ?? "")
     }
     
-    func hasSymbol(_ expectedSymbol: String? = nil) -> Bool {
-        if isAtEnd {
-            return false
-        }
+    func hasSymbol(_ expectedSymbol: String? = nil, updateCurrentIndexOnMatch: Bool = false) -> String? {
+        if isAtEnd { return nil }
         if case let .symbol(string) = tokens[currentIndex].kind {
             if expectedSymbol == nil {
-                return true
+                if updateCurrentIndexOnMatch { currentIndex += 1 }
+                return string
             } else if let expectedSymbol = expectedSymbol, expectedSymbol == string {
-                return true
+                if updateCurrentIndexOnMatch { currentIndex += 1 }
+                return string
             }
         }
         
-        return false
+        return nil
     }
     
     func expectNewline() throws {
@@ -224,7 +243,7 @@ public class Tokenizer: CustomDebugStringConvertible {
     }
     
     func hasNewline() -> Bool {
-        return hasSymbol("\n")
+        return hasSymbol("\n") != nil
     }
     
     func skipNewlines() {

@@ -12,7 +12,14 @@ func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     if args.count == 1 {
         try print("\(args[0].string(stack: context.stack))")
         return
+    } else if args.count < 1 {
+        throw RuntimeError.tooFewOperands
+    } else {
+        throw RuntimeError.tooManyOperands
     }
+}
+
+func PutInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     if args.count < 3 {
         throw RuntimeError.tooFewOperands
     } else if args.count > 3 {
@@ -24,6 +31,7 @@ func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
         throw RuntimeError.invalidPutDestination
     }
 }
+
 
 public struct RunContext {
     public var script: Script
@@ -53,7 +61,8 @@ public struct RunContext {
         }
     }
         
-    static var builtinFunctions: [String:(_ : [Variant], _: inout RunContext) throws -> Void] = ["put": PrintInstructionFunc]
+    static var builtinFunctions: [String:(_ : [Variant], _: inout RunContext) throws -> Void] = ["output": PrintInstructionFunc,
+         "put": PutInstructionFunc]
 }
 
 protocol RunnableInstruction {
