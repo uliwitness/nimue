@@ -7,11 +7,6 @@ public enum ParseError: Error {
     case expectedOperator(string: String)
 }
 
-fileprivate let identifierCS = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols)
-fileprivate let whitespaceCS = CharacterSet.whitespaces
-fileprivate let newlineCS = CharacterSet.newlines
-
 struct Function {
     var firstInstruction: Int
     var variables = Variables()
@@ -46,82 +41,6 @@ public struct Script: CustomDebugStringConvertible {
     }
 }
 
-fileprivate extension Scanner {
-    func expectNewline() throws {
-        guard scanCharacters(from: newlineCS) != nil else {
-            throw ParseError.expectedEndOfLine
-        }
-    }
-    
-    func expectIdentifier(_ string: String) throws {
-        guard let ident = scanCharacters(from: identifierCS) else {
-            throw ParseError.expectedIdentifier(string: string)
-        }
-        guard ident.caseInsensitiveCompare(string) == .orderedSame else {
-            throw ParseError.expectedIdentifier(string: string)
-        }
-    }
-    
-    func expectOperator(_ string: String) throws {
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            throw ParseError.expectedOperator(string: string)
-        }
-        guard String(character) == string else {
-            throw ParseError.expectedOperator(string: string)
-        }
-    }
-    
-    func haveNewline() -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard scanCharacters(from: newlineCS) != nil else {
-            return false
-        }
-        return true
-    }
-    
-    func haveIdentifier(_ string: String) -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard let ident = scanCharacters(from: identifierCS) else {
-            return false
-        }
-        guard ident.caseInsensitiveCompare(string) == .orderedSame else {
-            return false
-        }
-        
-        return true
-    }
-    
-    func haveOperator(_ string: String) -> Bool {
-        let oldIndex = currentIndex
-        defer { currentIndex = oldIndex }
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            return false
-        }
-        guard String(character) == string else {
-            return false
-        }
-        
-        return true
-    }
-    
-    func scanIdentifier() throws -> String {
-        guard let string = scanCharacters(from: identifierCS) else {
-            throw ParseError.expectedIdentifier(string: "")
-        }
-        return string
-    }
-    
-    func scanOperator() throws -> String {
-        guard let character = scanCharacter(), character.isPunctuation || character.isSymbol else {
-            throw ParseError.expectedOperator(string: "")
-        }
-        
-        return String(character)
-    }
-}
-
 struct Variables {
     var mappings = [String: Instruction]()
     var numVariables: Int = 0
@@ -130,30 +49,14 @@ struct Variables {
 public class Parser {
     public var script = Script()
     
-    private func parseValue(scanner: Scanner, instructions: inout [Instruction], variables: inout Variables, writable: Bool = false) throws -> Bool {
-        if scanner.scanString("\"") != nil {
-            scanner.charactersToBeSkipped = nil
-            defer { scanner.charactersToBeSkipped = whitespaceCS }
-            var str = ""
-            while true {
-                let currPart = scanner.scanUpToString("\"") ?? ""
-                str.append(currPart)
-                if currPart.hasSuffix("\\") {
-                    _ = scanner.scanString("\"")
-                    str.append("\"")
-                } else {
-                    _ = scanner.scanString("\"")
-                    break
-                }
-            }
+    private func parseValue(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables, writable: Bool = false) throws -> Bool {
+        if let str = try? tokenizer.expectString() {
             instructions.append(PushStringInstruction(string: str))
-        } else if let numStr = scanner.scanCharacters(from: CharacterSet.decimalDigits.union(CharacterSet(charactersIn: "."))) {
-            if numStr.contains(".") {
-                instructions.append(PushDoubleInstruction(double: Double(numStr) ?? 0.0))
-            } else {
-                instructions.append(PushIntegerInstruction(integer: Int(numStr) ?? 0))
-            }
-        } else if let identStr = scanner.scanCharacters(from: identifierCS) {
+        } else if let integer = try? tokenizer.expectInteger() {
+            instructions.append(PushIntegerInstruction(integer: integer))
+        } else if let double = try? tokenizer.expectNumber() {
+            instructions.append(PushDoubleInstruction(double: double))
+        } else if let identStr = try? tokenizer.expectIdentifier() {
             if let identInstr = variables.mappings[identStr] {
                 instructions.append(identInstr)
             } else if writable {
@@ -168,10 +71,10 @@ public class Parser {
         return true
     }
     
-    private func parseCommand(scanner: Scanner, instructions: inout [Instruction], variables: inout Variables) throws {
-        let functionName = try scanner.scanIdentifier()
+    private func parseCommand(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+        let functionName = try tokenizer.expectIdentifier()
         
-        if try functionName == "local" && parseValue(scanner: scanner, instructions: &instructions, variables: &variables, writable: true) {
+        if try functionName == "local" && parseValue(tokenizer: tokenizer, instructions: &instructions, variables: &variables, writable: true) {
             return
         }
         
@@ -179,14 +82,14 @@ public class Parser {
         var params = [[Instruction]]()
         while true {
             var paramInstructions = [Instruction]()
-            if try !parseValue(scanner: scanner, instructions: &paramInstructions, variables: &variables) {
+            if try !parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables) {
                 break
             }
             params.append(paramInstructions)
-            if !scanner.haveOperator(",") {
+            if !tokenizer.hasSymbol(",") {
                 break
             } else {
-                try scanner.expectOperator(",")
+                try tokenizer.expectSymbol(",")
             }
         }
         // Now append code for parameters in reverse, so
@@ -203,39 +106,37 @@ public class Parser {
         instructions.append(CallInstruction(message: functionName))
     }
     
-    private func parseFunction(scanner: Scanner) throws {
+    private func parseFunction(tokenizer: Tokenizer) throws {
         var function = Function(firstInstruction: script.instructions.count)
-        let functionName = try scanner.scanIdentifier()
+        let functionName = try tokenizer.expectIdentifier()
         
         script.instructions.append(ReserveStackInstruction(valueCount: 0))
         
         // Parse list of parameter variable names:
         var parameterCount: Int = 0
-        while let nextParamVariableName = try? scanner.scanIdentifier() {
+        while let nextParamVariableName = try? tokenizer.expectIdentifier() {
             parameterCount += 1
             function.variables.mappings[nextParamVariableName] = ParameterInstruction(index: parameterCount)
-            if !scanner.haveOperator(",") {
+            if !tokenizer.hasSymbol(",") {
                 break
             } else {
-                try scanner.expectOperator(",")
+                try tokenizer.expectSymbol(",")
             }
         }
         
-        try scanner.expectNewline()
+        try tokenizer.expectNewline()
         
         // Parse lines of commands until we hit the "end" token:
-        while !scanner.haveIdentifier("end") {
-            if scanner.haveNewline() { continue }
-            try parseCommand(scanner: scanner, instructions: &script.instructions, variables: &function.variables)
-            if scanner.scanCharacters(from: newlineCS) == nil {
-                throw ParseError.expectedOperator(string: "\n")
-            }
+        while !tokenizer.hasIdentifier("end") {
+            tokenizer.skipNewlines()
+            try parseCommand(tokenizer: tokenizer, instructions: &script.instructions, variables: &function.variables)
+            try tokenizer.expectNewline()
         }
         
         script.instructions.append(ReturnInstruction(numVariables: function.variables.numVariables))
         
-        try scanner.expectIdentifier("end")
-        try scanner.expectIdentifier(functionName)
+        try tokenizer.expectIdentifier("end")
+        try tokenizer.expectIdentifier(functionName)
         
         script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numVariables)
         
@@ -244,23 +145,18 @@ public class Parser {
     }
     
     
-    func parse( _ text: String) throws {
-        let scanner = Scanner(string: text)
-        scanner.caseSensitive = false
-        scanner.charactersToBeSkipped = whitespaceCS
-        
-        while !scanner.isAtEnd {
-            _ = scanner.scanCharacters(from: newlineCS)
-            if scanner.isAtEnd { break }
-            let word = try scanner.scanIdentifier()
+    func parse( _ tokenizer: Tokenizer) throws {
+        while !tokenizer.isAtEnd {
+            if tokenizer.isAtEnd { break }
+            tokenizer.skipNewlines()
+            let word = try? tokenizer.expectIdentifier()
             switch word {
             case "on":
-                try parseFunction(scanner: scanner)
+                try parseFunction(tokenizer: tokenizer)
             case "function":
-                try parseFunction(scanner: scanner)
+                try parseFunction(tokenizer: tokenizer)
             default:
-                _ = scanner.scanUpToCharacters(from: newlineCS)
-                _ = scanner.scanCharacters(from: newlineCS)
+                tokenizer.skipLine()
             }
         }
     }
