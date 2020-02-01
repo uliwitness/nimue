@@ -1,17 +1,28 @@
 enum RuntimeError: Error {
     case stackIndexOutOfRange
     case tooFewOperands
+    case tooManyOperands
     case zeroDivision
     case unknownMessage(_ name: String)
     case unknownInstruction(_ name: String)
+    case invalidPutDestination
 }
 
 func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
-    var str = ""
-    for arg in args {
-        str.append(arg.string(stack: context.stack))
+    if args.count == 1 {
+        try print("\(args[0].string(stack: context.stack))")
+        return
     }
-    print("\(str)");
+    if args.count < 3 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 3 {
+        throw RuntimeError.tooManyOperands
+    }
+    if let index = args[2].referenceIndex(stack: context.stack) {
+        context.stack[index] = args[0]
+    } else {
+        throw RuntimeError.invalidPutDestination
+    }
 }
 
 public struct RunContext {
@@ -25,12 +36,12 @@ public struct RunContext {
         for param in params.reversed() {
             stack.append(param)
         }
-        stack.append(Variant(params.count))
+        stack.append(Variant(parameterCount: params.count))
         currentInstruction = script.functionStarts[handler]?.firstInstruction ?? -1
         backPointer = 1
 
-        stack.append(Variant(-1))
-        stack.append(Variant(-1))
+        stack.append(Variant(instructionIndex: -1))
+        stack.append(Variant(stackIndex: -1))
         
         while currentInstruction >= 0 {
             guard let currInstr = script.instructions[currentInstruction] as? RunnableInstruction else { throw RuntimeError.unknownInstruction("\(script.instructions[currentInstruction])") }
@@ -65,6 +76,13 @@ extension PushIntegerInstruction : RunnableInstruction {
     }
 }
 
+extension PushParameterCountInstruction : RunnableInstruction {
+    func run(_ context: inout RunContext) throws {
+        context.stack.append(Variant(parameterCount: parameterCount))
+        context.currentInstruction += 1
+    }
+}
+
 extension PushDoubleInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
         context.stack.append(Variant(double))
@@ -74,9 +92,9 @@ extension PushDoubleInstruction : RunnableInstruction {
 
 extension AddInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
-        guard let arg1 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
-        guard let arg2 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let arg1 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let arg2 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
 
         context.stack.append(Variant(arg1 + arg2))
         context.currentInstruction += 1
@@ -85,9 +103,9 @@ extension AddInstruction : RunnableInstruction {
 
 extension SubtractInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
-        guard let arg1 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
-        guard let arg2 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let arg1 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let arg2 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
 
         context.stack.append(Variant(arg1 - arg2))
         context.currentInstruction += 1
@@ -96,9 +114,9 @@ extension SubtractInstruction : RunnableInstruction {
 
 extension MultiplyInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
-        guard let arg1 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
-        guard let arg2 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let arg1 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let arg2 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
 
         context.stack.append(Variant(arg1 * arg2))
         context.currentInstruction += 1
@@ -107,9 +125,9 @@ extension MultiplyInstruction : RunnableInstruction {
 
 extension DivideInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
-        guard let arg1 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
-        guard let arg2 = context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let arg1 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let arg2 = try context.stack.popLast()?.double(stack: context.stack) else { throw RuntimeError.tooFewOperands }
         
         if arg2 == 0.0 {
             throw RuntimeError.zeroDivision
@@ -122,9 +140,9 @@ extension DivideInstruction : RunnableInstruction {
 
 extension ConcatenateInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
-        guard let arg1 = context.stack.popLast()?.string(stack: context.stack) else { throw RuntimeError.tooFewOperands }
-        guard let arg2 = context.stack.popLast()?.string(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let arg1 = try context.stack.popLast()?.string(stack: context.stack) else { throw RuntimeError.tooFewOperands }
+        guard let arg2 = try context.stack.popLast()?.string(stack: context.stack) else { throw RuntimeError.tooFewOperands }
         
         context.stack.append(Variant(arg1 + arg2))
         context.currentInstruction += 1
@@ -133,7 +151,7 @@ extension ConcatenateInstruction : RunnableInstruction {
 
 extension CopyInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        guard let paramCount = context.stack.popLast()?.integer(stack: context.stack), paramCount == 2 else { throw RuntimeError.tooFewOperands }
+        guard let paramCount = try context.stack.popLast()?.parameterCount(), paramCount == 2 else { throw RuntimeError.tooFewOperands }
         
         guard let arg1 = context.stack.popLast() else { throw RuntimeError.tooFewOperands }
         if let index = arg1.referenceIndex(stack: context.stack) {
@@ -155,12 +173,12 @@ extension CallInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
         if let destinationInstruction = context.script.functionStarts[message]?.firstInstruction {
             let newBackPointer = context.stack.count
-            context.stack.append(Variant(context.currentInstruction + 1))
-            context.stack.append(Variant(context.backPointer))
+            context.stack.append(Variant(instructionIndex: context.currentInstruction + 1))
+            context.stack.append(Variant(stackIndex: context.backPointer))
             context.backPointer = newBackPointer
             context.currentInstruction = destinationInstruction
         } else if let builtinFunction = RunContext.builtinFunctions[message] {
-            let paramCount = context.stack.popLast()!.integer(stack: context.stack)
+            let paramCount = try context.stack.popLast()!.parameterCount()
             var args = [Variant]()
             for _ in 0 ..< paramCount {
                 args.append(context.stack.popLast()!)
@@ -178,9 +196,9 @@ extension ReturnInstruction : RunnableInstruction {
         for _ in 0 ..< numVariables {
             context.stack.removeLast()
         }
-        context.backPointer = context.stack.popLast()!.integer(stack: context.stack)
-        context.currentInstruction = context.stack.popLast()!.integer(stack: context.stack)
-        let paramCount = context.stack.popLast()!.integer(stack: context.stack)
+        context.backPointer = try context.stack.popLast()!.stackIndex()
+        context.currentInstruction = try context.stack.popLast()!.instructionIndex()
+        let paramCount = try context.stack.popLast()!.parameterCount()
         for _ in 0 ..< paramCount {
             context.stack.removeLast()
         }
@@ -198,7 +216,7 @@ extension StackValueBPRelativeInstruction : RunnableInstruction {
 
 extension ParameterInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        if context.stack[context.backPointer - 1].integer(stack: context.stack) < index {
+        if try context.stack[context.backPointer - 1].parameterCount() < index {
             context.stack.append(Variant())
         } else {
             context.stack.append(Variant(referenceIndex: context.backPointer - 1 - index)) // - 1 because param count is first.

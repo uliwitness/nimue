@@ -1,6 +1,6 @@
 import Foundation
 
-public enum TokenizerError: Error {
+public enum ParseError: Error {
     case expectedFunctionName
     case expectedEndOfLine
     case expectedIdentifier(string: String)
@@ -8,6 +8,7 @@ public enum TokenizerError: Error {
     case expectedInteger
     case expectedNumber
     case expectedString
+    case expectedValue
 }
 
 
@@ -48,7 +49,7 @@ class Tokenizer: CustomDebugStringConvertible {
             if scanner.scanString("\"") != nil {
                 scanner.charactersToBeSkipped = nil
                 defer { scanner.charactersToBeSkipped = whitespaceCS }
-                guard let str = scanner.scanUpToString("\"") else { throw TokenizerError.expectedOperator(string: "\"") }
+                guard let str = scanner.scanUpToString("\"") else { throw ParseError.expectedOperator(string: "\"") }
                 tokens.append(Token(kind: .quotedString(str), offset: offset))
                 scanner.charactersToBeSkipped = CharacterSet.whitespaces
                 _ = scanner.scanString("\"")
@@ -71,7 +72,7 @@ class Tokenizer: CustomDebugStringConvertible {
     @discardableResult
     func expectIdentifier(_ expectedIdentifier: String? = nil) throws -> String {
         if isAtEnd {
-            throw TokenizerError.expectedIdentifier(string: expectedIdentifier ?? "")
+            throw ParseError.expectedIdentifier(string: expectedIdentifier ?? "")
         }
         if case let .unquotedString(string) = tokens[currentIndex].kind {
             if expectedIdentifier == nil {
@@ -83,7 +84,7 @@ class Tokenizer: CustomDebugStringConvertible {
             }
         }
         
-        throw TokenizerError.expectedIdentifier(string: expectedIdentifier ?? "")
+        throw ParseError.expectedIdentifier(string: expectedIdentifier ?? "")
     }
 
     func hasIdentifier(_ expectedIdentifier: String? = nil) -> Bool {
@@ -104,7 +105,7 @@ class Tokenizer: CustomDebugStringConvertible {
     @discardableResult
     func expectString(allowUnquoted: Bool = false) throws -> String {
         if isAtEnd {
-            throw TokenizerError.expectedString
+            throw ParseError.expectedString
         }
         if case let .quotedString(string) = tokens[currentIndex].kind {
                 currentIndex += 1
@@ -114,7 +115,7 @@ class Tokenizer: CustomDebugStringConvertible {
                 return string
         }
         
-        throw TokenizerError.expectedString
+        throw ParseError.expectedString
     }
     
     func hasString(allowUnquoted: Bool = false) -> Bool {
@@ -132,14 +133,14 @@ class Tokenizer: CustomDebugStringConvertible {
 
     func expectInteger() throws -> Int {
         if isAtEnd {
-            throw TokenizerError.expectedInteger
+            throw ParseError.expectedInteger
         }
         if case let .integer(num) = tokens[currentIndex].kind {
             currentIndex += 1
             return num
         }
         
-        throw TokenizerError.expectedInteger
+        throw ParseError.expectedInteger
     }
     
     func hasInteger() -> Bool {
@@ -155,7 +156,7 @@ class Tokenizer: CustomDebugStringConvertible {
 
     func expectNumber() throws -> Double {
         if isAtEnd {
-            throw TokenizerError.expectedNumber
+            throw ParseError.expectedNumber
         }
         if case let .integer(num) = tokens[currentIndex].kind {
             currentIndex += 1
@@ -165,7 +166,7 @@ class Tokenizer: CustomDebugStringConvertible {
             return num
         }
         
-        throw TokenizerError.expectedNumber
+        throw ParseError.expectedNumber
     }
     
     func hasNumber() -> Bool {
@@ -184,7 +185,7 @@ class Tokenizer: CustomDebugStringConvertible {
     @discardableResult
     func expectSymbol(_ expectedSymbol: String? = nil) throws -> String {
         if isAtEnd {
-            throw TokenizerError.expectedOperator(string: expectedSymbol ?? "")
+            throw ParseError.expectedOperator(string: expectedSymbol ?? "")
         }
         if case let .symbol(string) = tokens[currentIndex].kind {
             if expectedSymbol == nil {
@@ -196,7 +197,7 @@ class Tokenizer: CustomDebugStringConvertible {
             }
         }
         
-        throw TokenizerError.expectedOperator(string: expectedSymbol ?? "")
+        throw ParseError.expectedOperator(string: expectedSymbol ?? "")
     }
     
     func hasSymbol(_ expectedSymbol: String? = nil) -> Bool {
@@ -245,26 +246,30 @@ class Tokenizer: CustomDebugStringConvertible {
     var debugDescription: String {
         var str = "Tokenizer {\n"
         
+        var lastWasLineBreak = true
         for token in tokens {
+            if lastWasLineBreak { str += "\t" }
+            lastWasLineBreak = false
             switch token.kind {
             case .symbol(let string):
                 if string == "\n" {
                     str += "⮐\n"
+                    lastWasLineBreak = true
                 } else {
                     str += "[\(string)], "
                 }
             case .quotedString(let string):
                 str += "\"\(string)\", "
             case .unquotedString(let string):
-                str += "[\(string)], "
+                str += "\(string), "
             case .integer(let num):
-                str += "<\(num)>, "
+                str += "\(num)L, "
             case .double(let num):
-                str += "<\(num)>, "
+                str += "\(num)F, "
             }
         }
-        
-        str += "\n}"
+        if !lastWasLineBreak { str += "\n" }
+        str += "}"
         
         return str
     }

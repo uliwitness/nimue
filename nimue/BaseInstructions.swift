@@ -11,6 +11,10 @@ struct PushIntegerInstruction: Instruction {
     let integer: Int
 }
 
+struct PushParameterCountInstruction: Instruction {
+    let parameterCount: Int
+}
+
 struct PushDoubleInstruction: Instruction {
     let double: Double
 }

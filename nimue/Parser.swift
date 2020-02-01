@@ -1,12 +1,5 @@
 import Foundation
 
-public enum ParseError: Error {
-    case expectedFunctionName
-    case expectedEndOfLine
-    case expectedIdentifier(string: String)
-    case expectedOperator(string: String)
-}
-
 struct Function {
     var firstInstruction: Int
     var variables = Variables()
@@ -60,8 +53,10 @@ public class Parser {
             if let identInstr = variables.mappings[identStr] {
                 instructions.append(identInstr)
             } else if writable {
-                variables.mappings[identStr] = StackValueBPRelativeInstruction(index: variables.numVariables + 2)
+                let variableInstruction = StackValueBPRelativeInstruction(index: variables.numVariables + 2)
+                variables.mappings[identStr] = variableInstruction
                 variables.numVariables += 1
+                instructions.append(variableInstruction)
             } else {
                 instructions.append(PushStringInstruction(string: identStr))
             }
@@ -74,10 +69,38 @@ public class Parser {
     private func parseCommand(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
         let functionName = try tokenizer.expectIdentifier()
         
-        if try functionName == "local" && parseValue(tokenizer: tokenizer, instructions: &instructions, variables: &variables, writable: true) {
+        var ignoredInstructions = [Instruction]()
+        if try functionName == "local" && parseValue(tokenizer: tokenizer, instructions: &ignoredInstructions, variables: &variables, writable: true) {
             return
         }
-        
+
+        if functionName == "put" {
+            var params = [[Instruction]]()
+            var paramInstructions = [Instruction]()
+            guard try parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, writable: false) else { throw ParseError.expectedValue }
+            params.append(paramInstructions);
+            
+            if let operation = try? tokenizer.expectIdentifier() {
+                params.append([PushStringInstruction(string: operation.lowercased())])
+            
+                paramInstructions = [Instruction]()
+                guard try parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, writable: true) else { throw ParseError.expectedValue }
+                params.append(paramInstructions);
+            }
+
+            for paramInstructions in params.reversed() {
+                instructions.append(contentsOf: paramInstructions)
+            }
+
+            // Push number of parameters on stack so we can cope with getting
+            //  fewer parameters than expected or accept variadic parameters.
+            instructions.append(PushParameterCountInstruction(parameterCount: params.count))
+            
+            // Actual CALL instruction:
+            instructions.append(CallInstruction(message: functionName))
+            return
+        }
+
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
         while true {
@@ -100,7 +123,7 @@ public class Parser {
         }
         // Push number of parameters on stack so we can cope with getting
         //  fewer parameters than expected or accept variadic parameters.
-        instructions.append(PushIntegerInstruction(integer: params.count))
+        instructions.append(PushParameterCountInstruction(parameterCount: params.count))
         
         // Actual CALL instruction:
         instructions.append(CallInstruction(message: functionName))
