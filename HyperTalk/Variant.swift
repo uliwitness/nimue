@@ -5,6 +5,9 @@ public enum VariantError: Error {
     case expectedSavedBackPointer
     case expectedSavedProgramCounter
     case expectedParameterCount
+    case expectedIntegerHere
+    case expectedNumberHere
+    case expectedBooleanHere
 }
 
 public enum Value {
@@ -12,6 +15,7 @@ public enum Value {
     case string(_ value: String)
     case integer(_ value: Int)
     case double(_ value: Double)
+    case boolean(_ value: Bool)
     case reference(originalIndex: Int)
     case instructionIndex(index: Int)
     case stackIndex(index: Int)
@@ -31,6 +35,8 @@ public struct Variant {
             return "\(int)"
         case .double(let dbl):
             return "\(dbl)"
+        case .boolean(let bool):
+            return bool ? "true" : "false"
         case .reference(let index):
             return try stack[index].string(stack: stack)
         case .instructionIndex(_):
@@ -52,6 +58,8 @@ public struct Variant {
             return int
         case .double(let dbl):
             return Int(dbl)
+        case .boolean(_):
+            throw VariantError.expectedIntegerHere
         case .reference(let index):
             return try stack[index].integer(stack: stack)
         case .instructionIndex(_):
@@ -73,6 +81,8 @@ public struct Variant {
             return Double(int)
         case .double(let dbl):
             return dbl
+        case .boolean(_):
+            throw VariantError.expectedNumberHere
         case .reference(let index):
             return try stack[index].double(stack: stack)
         case .instructionIndex(_):
@@ -84,6 +94,31 @@ public struct Variant {
         }
     }
     
+    public func boolean(stack: [Variant]) throws -> Bool {
+        switch value {
+        case .empty:
+            throw VariantError.expectedBooleanHere
+        case .string(let str):
+            if str.caseInsensitiveCompare("true") == .orderedSame { return true }
+            if str.caseInsensitiveCompare("false") == .orderedSame { return false }
+            throw VariantError.expectedBooleanHere
+        case .integer(_):
+            throw VariantError.expectedBooleanHere
+        case .double(_):
+            throw VariantError.expectedBooleanHere
+        case .boolean(let boolean):
+            return boolean
+        case .reference(let index):
+            return try stack[index].boolean(stack: stack)
+        case .instructionIndex(_):
+            throw VariantError.attemptToAccessSavedProgramCounter
+        case .stackIndex(_):
+            throw VariantError.attemptToAccessSavedBackPointer
+        case .parameterCount(_):
+            throw VariantError.attemptToAccessParameterCount
+        }
+    }
+
     public func referenceIndex(stack: [Variant]) -> Int? {
         if case let .reference(index) = value {
             return stack[index].referenceIndex(stack: stack) ?? index
@@ -129,6 +164,10 @@ public struct Variant {
     
     public init(_ double: Double) {
         value = .double(double)
+    }
+    
+    public init(_ boolean: Bool) {
+        value = .boolean(boolean)
     }
     
     public init(referenceIndex refIndex: Int) {

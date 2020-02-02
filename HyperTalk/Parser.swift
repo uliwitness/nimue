@@ -156,25 +156,6 @@ public class Parser {
             return
         }
 
-        if functionName == "output" {
-            var params = [[Instruction]]()
-            var paramInstructions = [Instruction]()
-            guard try parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, writable: false) else { throw ParseError.expectedValue }
-            params.append(paramInstructions);
-
-            for paramInstructions in params.reversed() {
-                instructions.append(contentsOf: paramInstructions)
-            }
-
-            // Push number of parameters on stack so we can cope with getting
-            //  fewer parameters than expected or accept variadic parameters.
-            instructions.append(PushParameterCountInstruction(parameterCount: params.count))
-            
-            // Actual CALL instruction:
-            instructions.append(CallInstruction(message: functionName))
-            return
-        }
-
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
         while true {

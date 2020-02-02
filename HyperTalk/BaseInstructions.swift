@@ -59,10 +59,26 @@ public struct JumpByInstruction: Instruction, Equatable {
     let instructionCount: Int
 }
 
+/// Pops the last value of the stack, does nothing if it is FALSE,
+/// jumps by the given number of instructions if it is TRUE.
+public struct JumpByIfTrueInstruction: Instruction, Equatable {
+    let instructionCount: Int
+}
+
+/// Push parameters on the stack, in reverse order, and the number of
+/// parameters right before this instruction. Then it will send a
+/// of the given name with those parameters.
+/// This also saves the Back Pointer (BP) and currentInstruction (PC) + 1
+/// on the stack and sets the back pointer to right before where they are saved
+/// (right after the parameter count) so you can consistently reference parameters
+/// and local variables.
 public struct CallInstruction: Instruction, Equatable {
     let message: String
 }
 
+/// Cleans up the stack space claimed for variables by ReserveStackInstruction
+/// and then restores the saved back pointer (BP) and return address (PC) from
+/// the stack. It will then remove the parameters from the stack as well.
 public struct ReturnInstruction: Instruction, Equatable {
     let numVariables: Int
 }

@@ -182,6 +182,16 @@ extension JumpByInstruction : RunnableInstruction {
     }
 }
 
+extension JumpByIfTrueInstruction : RunnableInstruction {
+    func run(_ context: inout RunContext) throws {
+        if try context.stack.popLast()!.boolean(stack: context.stack) {
+            context.currentInstruction += instructionCount
+        } else {
+            context.currentInstruction += 1
+        }
+    }
+}
+
 extension CallInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
         if let destinationInstruction = context.script.functionStarts[message]?.firstInstruction {
