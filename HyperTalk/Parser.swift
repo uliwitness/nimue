@@ -97,12 +97,72 @@ public class Parser {
         return true
     }
     
-    private func parseCommand(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+    private func parseExpression(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables, forbiddenOperators: [String] = []) throws -> Bool {
+        var firstArgInstructions = [Instruction]()
+        
+        guard try parseValue(tokenizer: tokenizer, instructions: &firstArgInstructions, variables: &variables, writable: false) else { return false }
+        
+        var operands = [[Instruction]]()
+        operands.append(firstArgInstructions)
+        var operators = [String]()
+
+        while true {
+            guard let currentOperator = tokenizer.hasSymbol() else { break }
+
+            let oldIndex = tokenizer.currentIndex
+            try tokenizer.expectSymbol(currentOperator)
+            
+            var currArgInstructions = [Instruction]()
+            guard try parseValue(tokenizer: tokenizer, instructions: &currArgInstructions, variables: &variables, writable: false) else {
+                tokenizer.currentIndex = oldIndex
+                break
+            }
+
+            operators.append(currentOperator)
+            operands.append(currArgInstructions)
+        }
+        
+        instructions.append(contentsOf: operands.popLast()!)
+
+        print("operands = \(operands)")
+        print("operators = \(operators)")
+
+        while true {
+            guard let currOperator = operators.popLast() else { break }
+            guard let arg2 = operands.popLast() else {
+                operators.append(currOperator)
+                break
+            }
+            
+            instructions.append(contentsOf: arg2)
+            
+            // TODO: If previous operator has lower precedence, remove
+            //       call/paramCount instruction and insert it _after_ ours.
+            
+            instructions.append(PushParameterCountInstruction(parameterCount: 2))
+            instructions.append(CallInstruction(message: currOperator))
+        }
+        
+        if !operators.isEmpty {
+            throw ParseError.expectedOperandAfterOperator(string: operators.last!)
+        }
+        if operands.count != 1 // No expression, just one value.
+            && !operands.isEmpty {
+            throw ParseError.expectedOperator(string: "")
+        }
+        
+        return true
+    }
+    
+    private func parseEnglishHandlerCall(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws -> Bool {
+        // Try each command syntax entry whether its introductory tokens match:
         for commandSyntax in commandSyntaxes {
             let originalIndex = tokenizer.currentIndex
             if !tokenizer.hasIdentifiers(commandSyntax.identifiers, updateCurrentIndexOnMatch: true) {
                 continue
             }
+            
+            // Now parse the parameters' instructions separately into 'paramInstructions':
             var paramInstructions = [[Instruction]]()
             var paramCount = 0
             var matchedAllParams = true
@@ -114,7 +174,7 @@ public class Parser {
                 }
                 switch paramSyntax.valueKind {
                 case .expression:
-                    if try !parseValue(tokenizer: tokenizer, instructions: &valueInstructions, variables: &variables) {
+                    if try !parseExpression(tokenizer: tokenizer, instructions: &valueInstructions, variables: &variables) {
                         matchedAllParams = false
                     }
                     paramCount += 1
@@ -136,26 +196,28 @@ public class Parser {
                 if !matchedAllParams { break }
                 paramInstructions.append(valueInstructions)
             }
+            // Parameters didn't match? Backtrack and try next command:
             if !matchedAllParams {
                 tokenizer.currentIndex = originalIndex
                 continue
             }
             
+            // Now push the parsed parameters backwards and make it like
+            // any other handler call:
             for valueInstructions in paramInstructions.reversed() {
                 instructions.append(contentsOf: valueInstructions)
             }
             instructions.append(PushParameterCountInstruction(parameterCount: paramCount))
             instructions.append(CallInstruction(message: commandSyntax.identifiers.joined(separator: "")))
-            return
+            return true
         }
         
+        return false
+    }
+    
+    private func parseGenericHandlerCall(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
         let functionName = try tokenizer.expectIdentifier()
         
-        var ignoredInstructions = [Instruction]()
-        if try functionName == "local" && parseValue(tokenizer: tokenizer, instructions: &ignoredInstructions, variables: &variables, writable: true) {
-            return
-        }
-
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
         while true {
@@ -184,6 +246,23 @@ public class Parser {
         instructions.append(CallInstruction(message: functionName))
     }
     
+    private func parseOneLine(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+        
+        // Built-in handler call syntax:
+        if try parseEnglishHandlerCall(tokenizer: tokenizer, instructions: &instructions, variables: &variables) {
+            return
+        }
+        
+        // Try a "local" variable declaration:
+        var ignoredInstructions = [Instruction]()
+        if try tokenizer.hasIdentifier("local", updateCurrentIndexOnMatch: true) != nil && parseValue(tokenizer: tokenizer, instructions: &ignoredInstructions, variables: &variables, writable: true) {
+            return
+        }
+        
+        // Parse a regular handler call:
+        try parseGenericHandlerCall(tokenizer: tokenizer, instructions: &instructions, variables: &variables)
+    }
+    
     private func parseFunction(tokenizer: Tokenizer) throws {
         var function = Function(firstInstruction: script.instructions.count)
         let functionName = try tokenizer.expectIdentifier()
@@ -207,7 +286,7 @@ public class Parser {
         // Parse lines of commands until we hit the "end" token:
         while tokenizer.hasIdentifier("end") == nil {
             tokenizer.skipNewlines()
-            try parseCommand(tokenizer: tokenizer, instructions: &script.instructions, variables: &function.variables)
+            try parseOneLine(tokenizer: tokenizer, instructions: &script.instructions, variables: &function.variables)
             try tokenizer.expectNewline()
         }
         

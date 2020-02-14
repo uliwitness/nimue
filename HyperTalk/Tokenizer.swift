@@ -5,6 +5,7 @@ public enum ParseError: Error {
     case expectedEndOfLine
     case expectedIdentifier(string: String)
     case expectedOperator(string: String)
+    case expectedOperandAfterOperator(string: String)
     case expectedInteger
     case expectedNumber
     case expectedString

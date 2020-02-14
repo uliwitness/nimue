@@ -32,6 +32,50 @@ func PutInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     }
 }
 
+func SubtractInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let sum = try args[0].double(stack: context.stack) - args[1].double(stack: context.stack)
+    context.stack.append(Variant(sum))
+}
+
+func AddInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let sum = try args[0].double(stack: context.stack) + args[1].double(stack: context.stack)
+    context.stack.append(Variant(sum))
+}
+
+func MultiplyInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let sum = try args[0].double(stack: context.stack) * args[1].double(stack: context.stack)
+    context.stack.append(Variant(sum))
+}
+
+func DivideInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let sum = try args[0].double(stack: context.stack) * args[1].double(stack: context.stack)
+    context.stack.append(Variant(sum))
+}
+
 
 public struct RunContext {
     public var script: Script
@@ -62,7 +106,11 @@ public struct RunContext {
     }
         
     static var builtinFunctions: [String:(_ : [Variant], _: inout RunContext) throws -> Void] = ["output": PrintInstructionFunc,
-         "put": PutInstructionFunc]
+         "put": PutInstructionFunc,
+         "-": SubtractInstructionFunc,
+         "+": AddInstructionFunc,
+         "*": MultiplyInstructionFunc,
+         "/": DivideInstructionFunc]
 }
 
 protocol RunnableInstruction {
