@@ -275,7 +275,7 @@ public class Tokenizer: CustomDebugStringConvertible {
     func skipNewlines() {
         if isAtEnd { return }
         while case let .symbol(string) = tokens[currentIndex].kind {
-            guard string != "\n" else { break }
+            guard string == "\n" else { break }
             currentIndex += 1
             if isAtEnd { break }
         }

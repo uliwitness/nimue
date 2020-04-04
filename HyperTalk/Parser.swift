@@ -41,10 +41,11 @@ public struct Script: CustomDebugStringConvertible {
         for instr in instructions {
             if let funcName = functionNames[index], let funcInfo = functionStarts[funcName] {
                 descr.append("\t\(funcName): \(funcInfo.variables)\n")
+                descr.append("\t\t\n")
             }
             
             descr.append("\t\t\(instr)\n")
-            
+
             index += 1
         }
         
