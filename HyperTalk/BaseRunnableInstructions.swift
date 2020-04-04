@@ -76,6 +76,28 @@ func DivideInstructionFunc(_ args: [Variant], context: inout RunContext) throws 
     context.stack.append(Variant(sum))
 }
 
+func ConcatenateInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let concatenated = try args[0].string(stack: context.stack) + args[1].string(stack: context.stack)
+    context.stack.append(Variant(concatenated))
+}
+
+func ConcatenateSpaceInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let concatenated = try args[0].string(stack: context.stack) + " " + args[1].string(stack: context.stack)
+    context.stack.append(Variant(concatenated))
+}
+
 
 public struct RunContext {
     public var script: Script
@@ -110,7 +132,9 @@ public struct RunContext {
          "-": SubtractInstructionFunc,
          "+": AddInstructionFunc,
          "*": MultiplyInstructionFunc,
-         "/": DivideInstructionFunc]
+         "/": DivideInstructionFunc,
+         "&": ConcatenateInstructionFunc,
+         "&&": ConcatenateSpaceInstructionFunc]
 }
 
 protocol RunnableInstruction {

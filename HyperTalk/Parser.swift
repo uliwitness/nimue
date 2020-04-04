@@ -97,18 +97,108 @@ public class Parser {
         return true
     }
     
+    private indirect enum Operation: CustomDebugStringConvertible {
+        case none
+        case operand([Instruction])
+        case operation(operator: String, lhs: Operation, rhs: Operation)
+        
+        func replacingRHS(with rhs: Operation, operator op: String) -> Operation {
+            switch self {
+            case .operand(_):
+                return .operation(operator: op, lhs: self, rhs: rhs)
+            case .operation(operator: let selfOp, lhs: let selfLhs, rhs: let selfRhs):
+                if case .operand(_) = selfRhs {
+                    return .operation(operator: selfOp, lhs: selfLhs, rhs: .operation(operator: op, lhs: selfRhs, rhs: rhs))
+                } else {
+                    return .operation(operator: selfOp, lhs: selfLhs, rhs: selfRhs.replacingRHS(with: rhs, operator: op))
+                }
+            case .none:
+                fatalError("Invalid parser state: replacingRHS with .none self.")
+            }
+        }
+        
+        private static let operatorsByPrecedence = [
+            "*",
+            "/",
+            "-",
+            "+",
+            "&",
+            "&&",
+        ]
+        
+        static func precedence(of operatorName: String) -> Int {
+            return Operation.operatorsByPrecedence.firstIndex(of: operatorName) ?? Int.max
+        }
+        
+        /// Lowest number is most strongly binding operator:
+        var precedence: Int {
+            switch self {
+            case .operand(_):
+                return Int.max
+            case .operation(operator: let selfOp, lhs: _, rhs: _):
+                return Operation.precedence(of: selfOp)
+            case .none:
+                fatalError("Invalid parser state: precedence called on none.")
+            }
+        }
+        
+        var rightmostOperation: Operation {
+            switch self {
+            case .operand(_):
+                return self
+            case .operation(operator: _, lhs: _, let rhs):
+                if case .operation(_, _, _) = rhs {
+                    return rhs.rightmostOperation
+                } else {
+                    return self
+                }
+            case .none:
+                fatalError("Invalid parser state: precedence called on none.")
+            }
+        }
+        
+        private func debugDesc(depth: Int) -> String {
+            let indent = String(repeating: "\t", count: depth)
+            switch self {
+            case .operand(let instructions):
+                return indent + ".operand(\(instructions))"
+            case .operation(let selfOp, let lhs, let rhs):
+                return "\(indent).operation[\(selfOp)] {\n\(lhs.debugDesc(depth: depth + 1))\n\(rhs.debugDesc(depth: depth + 1))\n\(indent)}"
+            case .none:
+                return "\(indent).none"
+            }
+        }
+        
+        var debugDescription: String {
+            return debugDesc(depth: 0)
+        }
+    }
+    
+    private func appendInstructions(from expression: Operation, to instructions: inout [Instruction]) {
+        switch expression {
+        case .none:
+            fatalError("Invalid parser state: Expression is none when generating.")
+        case .operand(let opInstructions):
+            instructions.append(contentsOf: opInstructions)
+        case .operation(let opName, let lhs, let rhs):
+            appendInstructions(from: rhs, to: &instructions)
+            appendInstructions(from: lhs, to: &instructions)
+            instructions.append(PushParameterCountInstruction(parameterCount: 2))
+            instructions.append(CallInstruction(message: opName))
+        }
+    }
+    
     private func parseExpression(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables, forbiddenOperators: [String] = []) throws -> Bool {
         var firstArgInstructions = [Instruction]()
         
         guard try parseValue(tokenizer: tokenizer, instructions: &firstArgInstructions, variables: &variables, writable: false) else { return false }
         
-        var operands = [[Instruction]]()
-        operands.append(firstArgInstructions)
-        var operators = [String]()
+        var root = Operation.operand(firstArgInstructions)
 
         while true {
-            guard let currentOperator = tokenizer.hasSymbol() else { break }
-
+            guard let currentOperator = tokenizer.hasSymbol(), currentOperator != "\n" else { break }
+            if forbiddenOperators.contains(currentOperator) { break }
+            
             let oldIndex = tokenizer.currentIndex
             try tokenizer.expectSymbol(currentOperator)
             
@@ -118,39 +208,16 @@ public class Parser {
                 break
             }
 
-            operators.append(currentOperator)
-            operands.append(currArgInstructions)
-        }
-        
-        instructions.append(contentsOf: operands.popLast()!)
-
-        print("operands = \(operands)")
-        print("operators = \(operators)")
-
-        while true {
-            guard let currOperator = operators.popLast() else { break }
-            guard let arg2 = operands.popLast() else {
-                operators.append(currOperator)
-                break
+            let rightmost = root.rightmostOperation
+            if rightmost.precedence > Operation.precedence(of: currentOperator) {
+                root = root.replacingRHS(with: .operand(currArgInstructions), operator: currentOperator)
+            } else {
+                root = .operation(operator: currentOperator, lhs: root, rhs: .operand(currArgInstructions))
             }
-            
-            instructions.append(contentsOf: arg2)
-            
-            // TODO: If previous operator has lower precedence, remove
-            //       call/paramCount instruction and insert it _after_ ours.
-            
-            instructions.append(PushParameterCountInstruction(parameterCount: 2))
-            instructions.append(CallInstruction(message: currOperator))
         }
         
-        if !operators.isEmpty {
-            throw ParseError.expectedOperandAfterOperator(string: operators.last!)
-        }
-        if operands.count != 1 // No expression, just one value.
-            && !operands.isEmpty {
-            throw ParseError.expectedOperator(string: "")
-        }
-        
+        appendInstructions(from: root, to: &instructions)
+                
         return true
     }
     
@@ -222,7 +289,7 @@ public class Parser {
         var params = [[Instruction]]()
         while true {
             var paramInstructions = [Instruction]()
-            if try !parseValue(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables) {
+            if try !parseExpression(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, forbiddenOperators: [","]) {
                 break
             }
             params.append(paramInstructions)
