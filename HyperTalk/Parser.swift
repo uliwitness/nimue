@@ -40,8 +40,7 @@ public struct Script: CustomDebugStringConvertible {
         var index = 0
         for instr in instructions {
             if let funcName = functionNames[index], let funcInfo = functionStarts[funcName] {
-                descr.append("\t\(funcName): \(funcInfo.variables)\n")
-                descr.append("\t\t\n")
+                descr.append("\t\(funcName):\n\(funcInfo.variables.debugDesc(depth: 2))\n")
             }
             
             descr.append("\t\t\(instr)\n")
@@ -55,9 +54,30 @@ public struct Script: CustomDebugStringConvertible {
     }
 }
 
-struct Variables {
+struct Variables: CustomDebugStringConvertible {
     var mappings = [String: Instruction]()
     var numLocals: Int = 0
+    
+    func debugDesc(depth: Int) -> String {
+        var result = ""
+        let indent = String(repeating: "\t", count: depth)
+        
+        for mapping in mappings {
+            if let paramInstr = mapping.value as? StackValueBPRelativeInstruction {
+                result += "\(indent)\"\(mapping.key)\"\tvar[\(paramInstr.index)]\n"
+            } else if let paramInstr = mapping.value as? ParameterInstruction {
+                result += "\(indent)\"\(mapping.key)\"\tparam[\(paramInstr.index)]\n"
+            } else {
+                result += "\(indent)\"\(mapping.key)\"\t\(mapping.value)\n"
+            }
+        }
+        
+        return result
+    }
+    
+    var debugDescription: String {
+        return debugDesc(depth: 0)
+    }
 }
 
 public class Parser {

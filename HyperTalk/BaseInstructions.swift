@@ -45,6 +45,7 @@ public struct ConcatenateInstruction: Instruction, Equatable {
 }
 
 /// Assigns SP - 2 to SP - 3 (SP - 1 is param count, 2).
+/// Does _not_ follow references.
 public struct AssignInstruction: Instruction, Equatable {
     
 }
@@ -55,23 +56,26 @@ public struct CopyInstruction: Instruction, Equatable {
     
 }
 
+/// Advances currentInstruction by the given count, "jumping"
+/// forward or backward by that many instructions, skipping
+/// the instructions that lie in between.
 public struct JumpByInstruction: Instruction, Equatable {
     let instructionCount: Int
 }
 
-/// Pops the last value of the stack, does nothing if it is FALSE,
+/// Pops the last value off the stack, does nothing if it is FALSE,
 /// jumps by the given number of instructions if it is TRUE.
 public struct JumpByIfTrueInstruction: Instruction, Equatable {
     let instructionCount: Int
 }
 
-/// Push parameters on the stack, in reverse order, and the number of
-/// parameters right before this instruction. Then it will send a
-/// of the given name with those parameters.
-/// This also saves the Back Pointer (BP) and currentInstruction (PC) + 1
-/// on the stack and sets the back pointer to right before where they are saved
-/// (right after the parameter count) so you can consistently reference parameters
-/// and local variables.
+/// This instruction requires you to have pushed the parameters on the stack,
+/// in reverse order, and the number of parameters as the last element. Then
+/// it will send a message of the given name with those parameters.
+/// This also saves the Back Pointer (BP) and return address
+/// (currentInstruction (PC) + 1) on the stack and sets the back pointer to
+/// right before where they are saved (right after the parameter count) so
+/// you can consistently reference parameters and local variables.
 public struct CallInstruction: Instruction, Equatable {
     let message: String
 }
