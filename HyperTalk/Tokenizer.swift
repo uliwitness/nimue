@@ -22,6 +22,7 @@ private extension Array {
 
 fileprivate let identifierCS = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
 fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols)
+fileprivate let oneLineCommentStartCS = CharacterSet(charactersIn: "-")
 fileprivate let whitespaceCS = CharacterSet.whitespaces
 fileprivate let newlineCS = CharacterSet.newlines
 
@@ -52,6 +53,26 @@ public class Tokenizer: CustomDebugStringConvertible {
         
     }
     
+    private func addOperatorTokens(from string: String, offset: String.Index) throws {
+        var slice = Substring(string)
+        while !slice.isEmpty {
+            var found = false
+            for mco in Tokenizer.multiCharOperators {
+                if slice.hasPrefix(mco) {
+                    tokens.append(Token(kind: .symbol(mco), offset: offset))
+                    slice = slice[mco.endIndex ..< slice.endIndex]
+                    found = true
+                    break
+                }
+            }
+            if !found {
+                let singleCharOp = slice.first.map { String($0) } ?? ""
+                tokens.append(Token(kind: .symbol(String(singleCharOp)), offset: offset))
+                slice = slice.dropFirst()
+            }
+        }
+    }
+    
     public func addTokens(for text: String) throws {
         let scanner = Scanner(string: text)
         scanner.caseSensitive = false
@@ -67,24 +88,15 @@ public class Tokenizer: CustomDebugStringConvertible {
                 tokens.append(Token(kind: .quotedString(str), offset: offset))
                 scanner.charactersToBeSkipped = CharacterSet.whitespaces
                 _ = scanner.scanString("\"")
-            } else if let string = scanner.scanCharacters(from: operatorCS) {
-                var slice = Substring(string)
-                while !slice.isEmpty {
-                    var found = false
-                    for mco in Tokenizer.multiCharOperators {
-                        if slice.hasPrefix(mco) {
-                            tokens.append(Token(kind: .symbol(mco), offset: offset))
-                            slice = slice[mco.endIndex ..< slice.endIndex]
-                            found = true
-                            break
-                        }
-                    }
-                    if !found {
-                        let singleCharOp = slice.first.map { String($0) } ?? ""
-                        tokens.append(Token(kind: .symbol(String(singleCharOp)), offset: offset))
-                        slice = slice[singleCharOp.endIndex ..< slice.endIndex]
-                    }
+            } else if let string = scanner.scanCharacters(from: oneLineCommentStartCS) {
+                if string.hasPrefix("--") {
+                    let comment = scanner.scanUpToCharacters(from: newlineCS)
+                    print("Skipping comment: \(comment ?? "")")
+                } else {
+                    try addOperatorTokens(from: string, offset: offset)
                 }
+            } else if let string = scanner.scanCharacters(from: operatorCS) {
+                try addOperatorTokens(from: string, offset: offset)
             } else if let numStr = scanner.scanCharacters(from: CharacterSet.decimalDigits.union(CharacterSet(charactersIn: "."))) {
                 if numStr.contains(".") {
                     tokens.append(Token(kind: .double(Double(numStr) ?? 0.0), offset: offset))
