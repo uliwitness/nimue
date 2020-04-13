@@ -265,19 +265,19 @@ end main
         XCTAssertEqual(printInstructionOutput, "before\nafter\n")
     }
 
-//    func testWhileLoopCount() throws {
-//        _ = try runScript("""
-//function main
-//    output "before"
-//    put 5 into x
-//    repeat while x > 0
-//        output "looping" && x
-//        subtract 1 from x
-//    end repeat
-//    output "after"
-//end main
-//""", filePath: #function)
-//
-//        XCTAssertEqual(printInstructionOutput, "before\nlooping 5\nlooping 4\nlooping 3\nlooping 2\nlooping 1\nafter\n")
-//    }
+    func testWhileLoopCount() throws {
+        _ = try runScript("""
+function main
+    output "before"
+    put 5 into x
+    repeat while x > 0
+        output "looping" && x
+        subtract 1 from x
+    end repeat
+    output "after"
+end main
+""", filePath: #function)
+
+        XCTAssertEqual(printInstructionOutput, "before\nlooping 5\nlooping 4\nlooping 3\nlooping 2\nlooping 1\nafter\n")
+    }
 }

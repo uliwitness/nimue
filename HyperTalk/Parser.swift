@@ -358,7 +358,7 @@ public class Parser {
 
             let beforeConditionInstructionCount = instructions.count
             instructions.append(contentsOf: conditionExpression)
-            instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 1))
+            instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 2)) // +2 for the "jump back up" and the actual "jump by if false" instruction.
             instructions.append(contentsOf: loopedInstructions)
             let afterConditionInstructionCount = instructions.count
             instructions.append(JumpByInstruction(instructionCount: beforeConditionInstructionCount - afterConditionInstructionCount))
@@ -415,10 +415,10 @@ public class Parser {
 
             // Now actually assemble the code & branch expressions:
             instructions.append(contentsOf: conditionExpression)
-            instructions.append(JumpByIfFalseInstruction(instructionCount: trueInstructions.count + skipElseCaseInstructionCount))
+            instructions.append(JumpByIfFalseInstruction(instructionCount: trueInstructions.count + skipElseCaseInstructionCount + 1)) // +1 for the "jump by if false" instruction itself.
             instructions.append(contentsOf: trueInstructions)
             if !falseInstructions.isEmpty {
-                instructions.append(JumpByInstruction(instructionCount: falseInstructions.count))
+                instructions.append(JumpByInstruction(instructionCount: falseInstructions.count + 1)) // +1 for the "jump by" instruction itself.
                 instructions.append(contentsOf: falseInstructions)
             }
         } else {

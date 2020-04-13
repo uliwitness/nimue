@@ -20,6 +20,10 @@ func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
 }
 
 func PutInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count == 1 { // For HyperCard compatibility, let's accept put with 0 arguments as meaning "output".
+        try PrintInstructionFunc(args, context: &context)
+        return
+    }
     if args.count < 3 {
         throw RuntimeError.tooFewOperands
     } else if args.count > 3 {
@@ -305,25 +309,26 @@ extension CopyInstruction : RunnableInstruction {
 
 extension JumpByInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        context.currentInstruction += 1
         context.currentInstruction += instructionCount
     }
 }
 
 extension JumpByIfTrueInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        context.currentInstruction += 1
         if try context.stack.popLast()!.boolean(stack: context.stack) {
             context.currentInstruction += instructionCount
+        } else {
+            context.currentInstruction += 1
         }
     }
 }
 
 extension JumpByIfFalseInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        context.currentInstruction += 1
         if try !context.stack.popLast()!.boolean(stack: context.stack) {
             context.currentInstruction += instructionCount
+        } else {
+            context.currentInstruction += 1
         }
     }
 }
