@@ -87,7 +87,16 @@ public class Parser {
             SyntaxElement(identifiers: [], valueKind: .expression),
             SyntaxElement(identifiers: [], valueKind: .identifier(expected: ["into"])),
             SyntaxElement(identifiers: [], valueKind: .container)
-        ])]
+        ]),
+        Syntax(identifiers: ["add"], parameters: [
+            SyntaxElement(identifiers: [], valueKind: .expression),
+            SyntaxElement(identifiers: ["to"], valueKind: .container)
+        ]),
+        Syntax(identifiers: ["subtract"], parameters: [
+            SyntaxElement(identifiers: [], valueKind: .expression),
+            SyntaxElement(identifiers: ["from"], valueKind: .container)
+        ])
+    ]
     
     public init() {
         
@@ -338,7 +347,21 @@ public class Parser {
         try tokenizer.expectIdentifier("repeat")
         var conditionExpression = [Instruction]()
         if try tokenizer.hasIdentifier("while", updateCurrentIndexOnMatch: true) != nil && parseExpression(tokenizer: tokenizer, instructions: &conditionExpression, variables: &variables) {
-            
+            try tokenizer.expectNewline()
+            var loopedInstructions = [Instruction]()
+            while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end if" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
+                tokenizer.skipNewlines()
+                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try tokenizer.expectNewline()
+            }
+            try tokenizer.expectIdentifiers("end", "repeat")
+
+            let beforeConditionInstructionCount = instructions.count
+            instructions.append(contentsOf: conditionExpression)
+            instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 1))
+            instructions.append(contentsOf: loopedInstructions)
+            let afterConditionInstructionCount = instructions.count
+            instructions.append(JumpByInstruction(instructionCount: beforeConditionInstructionCount - afterConditionInstructionCount))
         } else {
             throw ParseError.expectedIdentifier(string: "while", token: tokenizer.currentToken)
         }

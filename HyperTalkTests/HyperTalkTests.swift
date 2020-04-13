@@ -18,13 +18,15 @@ class HyperTalkTests: XCTestCase {
     var parser: Parser!
     
     func runScript(_ text: String, filePath: String, functions: [String:RunContext.BuiltInFunction] = [:]) throws -> (Script, RunContext) {
+        printInstructionOutput = ""
         try tokenizer.addTokens(for: text, filePath: filePath)
         try parser.parse(tokenizer)
         var context = RunContext(script: parser.script)
-        print("context = \(context)")
+        context.builtinFunctions["output"] = PrintInstructionFunc
         for (key, value) in functions {
             context.builtinFunctions[key] = value
         }
+        print("context = \(context)")
         try! context.run("main")
         return (parser.script, context)
     }
@@ -134,7 +136,6 @@ end main
     }
     
     func testSomeExpressions() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 on doThang appName, argument, arg2, arg3
     output "It works!"
@@ -152,7 +153,7 @@ function main
     put 1 + 2 * 3 - 4 * 5 into otherVar
     output otherVar
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, """
 It works!
@@ -167,7 +168,6 @@ fooLocalVar
     }
         
     func testMultiLineConditionalExpressionTrue() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 function main
     output "before"
@@ -178,13 +178,12 @@ function main
     end if
     output "after"
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, "before\ntrue\nafter\n")
     }
 
     func testMultiLineConditionalExpressionFalse() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 function main
     output "before"
@@ -195,39 +194,50 @@ function main
     end if
     output "after"
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, "before\nfalse\nafter\n")
     }
 
     func testOneLineConditionalExpressionTrue() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 function main
     output "before"
     if true then output "true" else output "false"
     output "after"
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, "before\ntrue\nafter\n")
     }
 
     func testOneLineConditionalExpressionFalse() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 function main
     output "before"
     if false then output "true" else output "false"
     output "after"
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, "before\nfalse\nafter\n")
     }
 
+    func testWrappedOneLineConditionalExpressionTrue() throws {
+        _ = try runScript("""
+function main
+    output "before"
+    if true
+    then output "true"
+    else output "false"
+    output "after"
+end main
+""", filePath: #function)
+        
+        XCTAssertEqual(printInstructionOutput, "before\ntrue\nafter\n")
+    }
+
     func testWrappedOneLineConditionalExpressionFalse() throws {
-        printInstructionOutput = ""
         _ = try runScript("""
 function main
     output "before"
@@ -236,8 +246,38 @@ function main
     else output "false"
     output "after"
 end main
-""", filePath: #function, functions: ["output": PrintInstructionFunc])
+""", filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, "before\nfalse\nafter\n")
     }
+
+    func testWhileLoopFalse() throws {
+        _ = try runScript("""
+function main
+    output "before"
+    repeat while false
+        output "looping"
+    end repeat
+    output "after"
+end main
+""", filePath: #function)
+        
+        XCTAssertEqual(printInstructionOutput, "before\nafter\n")
+    }
+
+//    func testWhileLoopCount() throws {
+//        _ = try runScript("""
+//function main
+//    output "before"
+//    put 5 into x
+//    repeat while x > 0
+//        output "looping" && x
+//        subtract 1 from x
+//    end repeat
+//    output "after"
+//end main
+//""", filePath: #function)
+//
+//        XCTAssertEqual(printInstructionOutput, "before\nlooping 5\nlooping 4\nlooping 3\nlooping 2\nlooping 1\nafter\n")
+//    }
 }

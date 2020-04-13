@@ -32,6 +32,32 @@ func PutInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     }
 }
 
+func AddCommandFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    if let index = args[1].referenceIndex(stack: context.stack) {
+        try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) + args[0].double(stack: context.stack))
+    } else {
+        throw RuntimeError.invalidPutDestination
+    }
+}
+
+func SubtractCommandFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    if let index = args[1].referenceIndex(stack: context.stack) {
+        try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) - args[0].double(stack: context.stack))
+    } else {
+        throw RuntimeError.invalidPutDestination
+    }
+}
+
 func SubtractInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     if args.count < 2 {
         throw RuntimeError.tooFewOperands
@@ -98,6 +124,28 @@ func ConcatenateSpaceInstructionFunc(_ args: [Variant], context: inout RunContex
     context.stack.append(Variant(concatenated))
 }
 
+func GreaterThanInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool = try args[0].double(stack: context.stack) > args[1].double(stack: context.stack)
+    context.stack.append(Variant(comparisonBool))
+}
+
+func LessThanInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool = try args[0].double(stack: context.stack) < args[1].double(stack: context.stack)
+    context.stack.append(Variant(comparisonBool))
+}
+
 
 public struct RunContext {
     public typealias BuiltInFunction = (_ : [Variant], _: inout RunContext) throws -> Void
@@ -132,12 +180,16 @@ public struct RunContext {
     public var builtinFunctions: [String:BuiltInFunction] = [
         "output": PrintInstructionFunc,
         "put": PutInstructionFunc,
+        "add": AddCommandFunc,
+        "subtract": SubtractCommandFunc,
         "-": SubtractInstructionFunc,
         "+": AddInstructionFunc,
         "*": MultiplyInstructionFunc,
         "/": DivideInstructionFunc,
         "&": ConcatenateInstructionFunc,
-        "&&": ConcatenateSpaceInstructionFunc]
+        "&&": ConcatenateSpaceInstructionFunc,
+        ">": GreaterThanInstructionFunc,
+        "<": LessThanInstructionFunc]
 }
 
 protocol RunnableInstruction {
