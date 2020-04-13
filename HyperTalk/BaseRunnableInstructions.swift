@@ -43,7 +43,11 @@ func AddCommandFunc(_ args: [Variant], context: inout RunContext) throws {
         throw RuntimeError.tooManyOperands
     }
     if let index = args[1].referenceIndex(stack: context.stack) {
-        try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) + args[0].double(stack: context.stack))
+        if let a = try? context.stack[index].integerIfPossible(stack: context.stack), let b = try? args[0].integerIfPossible(stack: context.stack) {
+            context.stack[index] = Variant(a + b)
+        } else {
+            try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) + args[0].double(stack: context.stack))
+        }
     } else {
         throw RuntimeError.invalidPutDestination
     }
@@ -56,7 +60,11 @@ func SubtractCommandFunc(_ args: [Variant], context: inout RunContext) throws {
         throw RuntimeError.tooManyOperands
     }
     if let index = args[1].referenceIndex(stack: context.stack) {
-        try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) - args[0].double(stack: context.stack))
+        if let a = try? context.stack[index].integerIfPossible(stack: context.stack), let b = try? args[0].integerIfPossible(stack: context.stack) {
+            context.stack[index] = Variant(a - b)
+        } else {
+            try context.stack[index] = Variant(context.stack[index].double(stack: context.stack) - args[0].double(stack: context.stack))
+        }
     } else {
         throw RuntimeError.invalidPutDestination
     }

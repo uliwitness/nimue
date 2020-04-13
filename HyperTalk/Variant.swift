@@ -118,6 +118,30 @@ public struct Variant {
             throw VariantError.attemptToAccessParameterCount
         }
     }
+    
+    public func integerIfPossible(stack: [Variant]) throws -> Int? {
+        switch value {
+        case .empty:
+            return nil
+        case .string(let str):
+            return Int(str)
+        case .integer(let int):
+            return int
+        case .double(let dbl):
+            guard Double(Int(dbl)) == dbl else { return nil }
+            return Int(dbl)
+        case .boolean(_):
+            return nil
+        case .reference(let index):
+            return try stack[index].integerIfPossible(stack: stack)
+        case .instructionIndex(_):
+            throw VariantError.attemptToAccessSavedProgramCounter
+        case .stackIndex(_):
+            throw VariantError.attemptToAccessSavedBackPointer
+        case .parameterCount(_):
+            throw VariantError.attemptToAccessParameterCount
+        }
+    }
 
     public func referenceIndex(stack: [Variant]) -> Int? {
         if case let .reference(index) = value {

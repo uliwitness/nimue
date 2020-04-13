@@ -157,7 +157,7 @@ end main
         
         XCTAssertEqual(printInstructionOutput, """
 It works!
- sometimes...
+ sometimes... 
 Hello, world!
 1
 
