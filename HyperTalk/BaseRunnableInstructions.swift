@@ -100,11 +100,13 @@ func ConcatenateSpaceInstructionFunc(_ args: [Variant], context: inout RunContex
 
 
 public struct RunContext {
-    public var script: Script
-    var currentInstruction: Int = 0 // Program Counter (PC)
+    public typealias BuiltInFunction = (_ : [Variant], _: inout RunContext) throws -> Void
     
-    var stack = [Variant]()
-    var backPointer: Int = 0 // (BP) End of parameters/start of local variables.
+    public var script: Script
+    public var currentInstruction: Int = 0 // Program Counter (PC)
+    
+    public var stack = [Variant]()
+    public var backPointer: Int = 0 // (BP) End of parameters/start of local variables.
     
     public init(script: Script) {
         self.script = script
@@ -127,14 +129,15 @@ public struct RunContext {
         }
     }
         
-    static var builtinFunctions: [String:(_ : [Variant], _: inout RunContext) throws -> Void] = ["output": PrintInstructionFunc,
-         "put": PutInstructionFunc,
-         "-": SubtractInstructionFunc,
-         "+": AddInstructionFunc,
-         "*": MultiplyInstructionFunc,
-         "/": DivideInstructionFunc,
-         "&": ConcatenateInstructionFunc,
-         "&&": ConcatenateSpaceInstructionFunc]
+    public var builtinFunctions: [String:BuiltInFunction] = [
+        "output": PrintInstructionFunc,
+        "put": PutInstructionFunc,
+        "-": SubtractInstructionFunc,
+        "+": AddInstructionFunc,
+        "*": MultiplyInstructionFunc,
+        "/": DivideInstructionFunc,
+        "&": ConcatenateInstructionFunc,
+        "&&": ConcatenateSpaceInstructionFunc]
 }
 
 protocol RunnableInstruction {
@@ -250,16 +253,25 @@ extension CopyInstruction : RunnableInstruction {
 
 extension JumpByInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
+        context.currentInstruction += 1
         context.currentInstruction += instructionCount
     }
 }
 
 extension JumpByIfTrueInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
+        context.currentInstruction += 1
         if try context.stack.popLast()!.boolean(stack: context.stack) {
             context.currentInstruction += instructionCount
-        } else {
-            context.currentInstruction += 1
+        }
+    }
+}
+
+extension JumpByIfFalseInstruction : RunnableInstruction {
+    func run(_ context: inout RunContext) throws {
+        context.currentInstruction += 1
+        if try !context.stack.popLast()!.boolean(stack: context.stack) {
+            context.currentInstruction += instructionCount
         }
     }
 }
@@ -272,14 +284,19 @@ extension CallInstruction : RunnableInstruction {
             context.stack.append(Variant(stackIndex: context.backPointer))
             context.backPointer = newBackPointer
             context.currentInstruction = destinationInstruction
-        } else if let builtinFunction = RunContext.builtinFunctions[message] {
-            let paramCount = try context.stack.popLast()!.parameterCount()
-            var args = [Variant]()
-            for _ in 0 ..< paramCount {
-                args.append(context.stack.popLast()!)
+        } else if let builtinFunction = context.builtinFunctions[message] {
+            do {
+                let paramCount = try context.stack.popLast()!.parameterCount()
+                var args = [Variant]()
+                for _ in 0 ..< paramCount {
+                    args.append(context.stack.popLast()!)
+                }
+                try builtinFunction(args, &context)
+                context.currentInstruction += 1
+            } catch {
+                print("error = \(error)\ncontext = \(context)")
+                throw error
             }
-            try builtinFunction(args, &context)
-            context.currentInstruction += 1
         } else {
             throw RuntimeError.unknownMessage(message)
         }

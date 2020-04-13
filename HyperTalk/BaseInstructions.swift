@@ -63,9 +63,17 @@ public struct JumpByInstruction: Instruction, Equatable {
     let instructionCount: Int
 }
 
-/// Pops the last value off the stack, does nothing if it is FALSE,
+/// Pops the last value off the stack, does nothing (except for
+/// advancing to the next instruction) if it is FALSE,
 /// jumps by the given number of instructions if it is TRUE.
 public struct JumpByIfTrueInstruction: Instruction, Equatable {
+    let instructionCount: Int
+}
+
+/// Pops the last value off the stack, does nothing (except for
+/// advancing to the next instruction) if it is TRUE,
+/// jumps by the given number of instructions if it is FALSE.
+public struct JumpByIfFalseInstruction: Instruction, Equatable {
     let instructionCount: Int
 }
 

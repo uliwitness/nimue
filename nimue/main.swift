@@ -1,10 +1,11 @@
 import HyperTalk
 
 do {
-    let text = try String(contentsOfFile: CommandLine.arguments[1])
+    let filePath = CommandLine.arguments[1]
+    let text = try String(contentsOfFile: filePath)
     
     let tokenizer = Tokenizer()
-    try tokenizer.addTokens(for: text)
+    try tokenizer.addTokens(for: text, filePath: filePath)
     print("\(tokenizer)")
     
     let parser = Parser()

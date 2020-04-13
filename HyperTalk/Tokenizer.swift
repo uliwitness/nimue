@@ -10,6 +10,7 @@ public enum ParseError: Error {
     case expectedNumber(token: Token?)
     case expectedString(token: Token?)
     case expectedValue(token: Token?)
+    case expectedExpression(token: Token?)
 }
 
 private extension Array {
@@ -37,14 +38,19 @@ public struct Token {
     
     let kind: Kind
     let offset: String.Index
+    let filePath: String
 }
 
 public class Tokenizer: CustomDebugStringConvertible {
-    public var tokens = [Token]()
-    var currentIndex = 0
+    public private(set) var tokens = [Token]()
+    public var currentIndex = 0
     
-    var isAtEnd: Bool {
+    public var isAtEnd: Bool {
         return currentIndex >= tokens.count
+    }
+    
+    public var currentToken: Token? {
+        return tokens[safe: currentIndex]
     }
     
     public static var multiCharOperators = ["&&"]
@@ -53,13 +59,13 @@ public class Tokenizer: CustomDebugStringConvertible {
         
     }
     
-    private func addOperatorTokens(from string: String, offset: String.Index) throws {
+    private func addOperatorTokens(from string: String, offset: String.Index, filePath: String) throws {
         var slice = Substring(string)
         while !slice.isEmpty {
             var found = false
             for mco in Tokenizer.multiCharOperators {
                 if slice.hasPrefix(mco) {
-                    tokens.append(Token(kind: .symbol(mco), offset: offset))
+                    tokens.append(Token(kind: .symbol(mco), offset: offset, filePath: filePath))
                     slice = slice[mco.endIndex ..< slice.endIndex]
                     found = true
                     break
@@ -67,13 +73,13 @@ public class Tokenizer: CustomDebugStringConvertible {
             }
             if !found {
                 let singleCharOp = slice.first.map { String($0) } ?? ""
-                tokens.append(Token(kind: .symbol(String(singleCharOp)), offset: offset))
+                tokens.append(Token(kind: .symbol(String(singleCharOp)), offset: offset, filePath: filePath))
                 slice = slice.dropFirst()
             }
         }
     }
     
-    public func addTokens(for text: String) throws {
+    public func addTokens(for text: String, filePath: String) throws {
         let scanner = Scanner(string: text)
         scanner.caseSensitive = false
         scanner.charactersToBeSkipped = whitespaceCS
@@ -85,7 +91,7 @@ public class Tokenizer: CustomDebugStringConvertible {
                 scanner.charactersToBeSkipped = nil
                 defer { scanner.charactersToBeSkipped = whitespaceCS }
                 guard let str = scanner.scanUpToString("\"") else { throw ParseError.expectedOperator(string: "\"", token: tokens[safe: currentIndex]) }
-                tokens.append(Token(kind: .quotedString(str), offset: offset))
+                tokens.append(Token(kind: .quotedString(str), offset: offset, filePath: filePath))
                 scanner.charactersToBeSkipped = CharacterSet.whitespaces
                 _ = scanner.scanString("\"")
             } else if let string = scanner.scanCharacters(from: oneLineCommentStartCS) {
@@ -93,20 +99,20 @@ public class Tokenizer: CustomDebugStringConvertible {
                     let comment = scanner.scanUpToCharacters(from: newlineCS)
                     print("Skipping comment: \(comment ?? "")")
                 } else {
-                    try addOperatorTokens(from: string, offset: offset)
+                    try addOperatorTokens(from: string, offset: offset, filePath: filePath)
                 }
             } else if let string = scanner.scanCharacters(from: operatorCS) {
-                try addOperatorTokens(from: string, offset: offset)
+                try addOperatorTokens(from: string, offset: offset, filePath: filePath)
             } else if let numStr = scanner.scanCharacters(from: CharacterSet.decimalDigits.union(CharacterSet(charactersIn: "."))) {
                 if numStr.contains(".") {
-                    tokens.append(Token(kind: .double(Double(numStr) ?? 0.0), offset: offset))
+                    tokens.append(Token(kind: .double(Double(numStr) ?? 0.0), offset: offset, filePath: filePath))
                 } else {
-                    tokens.append(Token(kind: .integer(Int(numStr) ?? 0), offset: offset))
+                    tokens.append(Token(kind: .integer(Int(numStr) ?? 0), offset: offset, filePath: filePath))
                 }
             } else if let string = scanner.scanCharacters(from: identifierCS) {
-                tokens.append(Token(kind: .unquotedString(string), offset: offset))
+                tokens.append(Token(kind: .unquotedString(string), offset: offset, filePath: filePath))
             } else if scanner.scanCharacters(from: newlineCS) != nil {
-                tokens.append(Token(kind: .symbol(String("\n")), offset: offset))
+                tokens.append(Token(kind: .symbol(String("\n")), offset: offset, filePath: filePath))
             }
         }
     }
@@ -129,6 +135,29 @@ public class Tokenizer: CustomDebugStringConvertible {
         throw ParseError.expectedIdentifier(string: expectedIdentifier ?? "", token: tokens[safe: currentIndex])
     }
 
+    func expectIdentifiers(_ expectedIdentifiers: String...) throws {
+        try expectIdentifiers(expectedIdentifiers)
+    }
+    
+    func expectIdentifiers(_ expectedIdentifiers: [String]) throws {
+        var expectedIndex = 0
+        var searchIndex = currentIndex
+        while expectedIndex < expectedIdentifiers.count {
+            let expectedIdentifier = expectedIdentifiers[expectedIndex]
+            if isAtEnd { throw ParseError.expectedIdentifier(string: expectedIdentifier, token: tokens[safe: currentIndex]) }
+            guard case let .unquotedString(string) = tokens[searchIndex].kind else {
+                throw ParseError.expectedIdentifier(string: expectedIdentifier, token: tokens[safe: currentIndex])
+            }
+            if expectedIdentifier != string {
+                throw ParseError.expectedIdentifier(string: expectedIdentifier, token: tokens[safe: currentIndex])
+            }
+            searchIndex += 1
+            expectedIndex += 1
+        }
+        
+        currentIndex = searchIndex
+    }
+
     func hasIdentifier(_ expectedIdentifier: String? = nil, updateCurrentIndexOnMatch: Bool = false) -> String? {
         if isAtEnd { return nil }
         if case let .unquotedString(string) = tokens[currentIndex].kind {
@@ -144,6 +173,10 @@ public class Tokenizer: CustomDebugStringConvertible {
         return nil
     }
 
+    func hasIdentifiers(_ expectedIdentifiers: String..., updateCurrentIndexOnMatch: Bool = false) -> Bool {
+        return hasIdentifiers(expectedIdentifiers)
+    }
+    
     func hasIdentifiers(_ expectedIdentifiers: [String], updateCurrentIndexOnMatch: Bool = false) -> Bool {
         var expectedIndex = 0
         var searchIndex = currentIndex
