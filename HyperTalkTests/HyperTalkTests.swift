@@ -138,11 +138,7 @@ end main
     func testSomeExpressions() throws {
         _ = try runScript("""
 on doThang appName, argument, arg2, arg3
-    output "It works!"
-    output " sometimes... "
-    output appName
-    output argument
-    output arg3
+    output "It works!" & " sometimes... " & appName && argument && "'" & arg3 & "'"
     --put "message:" && "foo" into fooLocalVar
     output fooLocalVar
 end doThang
@@ -156,11 +152,7 @@ end main
 """, filePath: #function)
         
         XCTAssertEqual(printInstructionOutput, """
-It works!
- sometimes... 
-Hello, world!
-1
-
+It works! sometimes... Hello, world! 1 ''
 fooLocalVar
 -13.0
 
