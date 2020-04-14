@@ -158,6 +158,64 @@ func LessThanInstructionFunc(_ args: [Variant], context: inout RunContext) throw
     context.stack.append(Variant(comparisonBool))
 }
 
+func LessThanEqualInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool = try args[0].double(stack: context.stack) <= args[1].double(stack: context.stack)
+    context.stack.append(Variant(comparisonBool))
+}
+
+func GreaterThanEqualInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool = try args[0].double(stack: context.stack) >= args[1].double(stack: context.stack)
+    context.stack.append(Variant(comparisonBool))
+}
+
+func EqualInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool: Bool
+    if let a = try? args[0].integer(stack: context.stack), let b = try? args[1].integer(stack: context.stack) {
+        comparisonBool = a == b
+    } else if let a = try? args[0].double(stack: context.stack), let b = try? args[1].double(stack: context.stack) {
+        comparisonBool = abs(a - b) < 0.00001
+    } else {
+        comparisonBool = try args[0].string(stack: context.stack) == args[1].string(stack: context.stack)
+    }
+    context.stack.append(Variant(comparisonBool))
+}
+
+func NotEqualInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 2 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    let comparisonBool: Bool
+    if let a = try? args[0].integer(stack: context.stack), let b = try? args[1].integer(stack: context.stack) {
+        comparisonBool = a != b
+    } else if let a = try? args[0].double(stack: context.stack), let b = try? args[1].double(stack: context.stack) {
+        comparisonBool = abs(a - b) > 0.00001
+    } else {
+        comparisonBool = try args[0].string(stack: context.stack) != args[1].string(stack: context.stack)
+    }
+    context.stack.append(Variant(comparisonBool))
+}
+
 
 public struct RunContext {
     public typealias BuiltInFunction = (_ : [Variant], _: inout RunContext) throws -> Void
@@ -185,7 +243,8 @@ public struct RunContext {
         
         while currentInstruction >= 0 {
             guard let currInstr = script.instructions[currentInstruction] as? RunnableInstruction else { throw RuntimeError.unknownInstruction("\(script.instructions[currentInstruction])") }
-            try! currInstr.run(&self)
+            print("\(currInstr)")
+            try currInstr.run(&self)
         }
     }
         
@@ -201,7 +260,11 @@ public struct RunContext {
         "&": ConcatenateInstructionFunc,
         "&&": ConcatenateSpaceInstructionFunc,
         ">": GreaterThanInstructionFunc,
-        "<": LessThanInstructionFunc]
+        "<": LessThanInstructionFunc,
+        ">=": GreaterThanEqualInstructionFunc,
+        "<=": LessThanEqualInstructionFunc,
+        "=": EqualInstructionFunc,
+        "≠": NotEqualInstructionFunc]
 }
 
 protocol RunnableInstruction {
