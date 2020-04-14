@@ -243,7 +243,6 @@ public struct RunContext {
         
         while currentInstruction >= 0 {
             guard let currInstr = script.instructions[currentInstruction] as? RunnableInstruction else { throw RuntimeError.unknownInstruction("\(script.instructions[currentInstruction])") }
-            print("\(currInstr)")
             try currInstr.run(&self)
         }
     }

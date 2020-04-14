@@ -22,12 +22,16 @@ class HyperTalkTests: XCTestCase {
         try tokenizer.addTokens(for: text, filePath: filePath)
         try parser.parse(tokenizer)
         var context = RunContext(script: parser.script)
-        context.builtinFunctions["output"] = PrintInstructionFunc
-        for (key, value) in functions {
-            context.builtinFunctions[key] = value
+        do {
+            context.builtinFunctions["output"] = PrintInstructionFunc
+            for (key, value) in functions {
+                context.builtinFunctions[key] = value
+            }
+            try context.run("main")
+        } catch {
+            print("context = \(context)")
+            throw error
         }
-        print("context = \(context)")
-        try context.run("main")
         return (parser.script, context)
     }
     
