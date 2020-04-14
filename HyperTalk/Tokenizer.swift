@@ -53,7 +53,7 @@ public class Tokenizer: CustomDebugStringConvertible {
         return tokens[safe: currentIndex]
     }
     
-    public static var multiCharOperators = ["&&"]
+    public static var multiCharOperators = ["&&", "<=", ">="]
     
     public init() {
         

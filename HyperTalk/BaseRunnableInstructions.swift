@@ -256,14 +256,15 @@ public struct RunContext {
         "+": AddInstructionFunc,
         "*": MultiplyInstructionFunc,
         "/": DivideInstructionFunc,
-        "&": ConcatenateInstructionFunc,
-        "&&": ConcatenateSpaceInstructionFunc,
         ">": GreaterThanInstructionFunc,
         "<": LessThanInstructionFunc,
         ">=": GreaterThanEqualInstructionFunc,
         "<=": LessThanEqualInstructionFunc,
         "=": EqualInstructionFunc,
-        "≠": NotEqualInstructionFunc]
+        "≠": NotEqualInstructionFunc,
+        "&": ConcatenateInstructionFunc,
+        "&&": ConcatenateSpaceInstructionFunc,
+    ]
 }
 
 protocol RunnableInstruction {
