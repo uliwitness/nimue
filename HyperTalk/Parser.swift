@@ -58,6 +58,24 @@ struct Variables: CustomDebugStringConvertible {
     var mappings = [String: Instruction]()
     var numLocals: Int = 0
     
+    func uniqueVariableName(_ hint: String) -> String {
+        var candidate = hint
+        var x = 2
+        while mappings.keys.contains(candidate) {
+            candidate = hint + "\(x)"
+            x += 1
+        }
+        return candidate
+    }
+    
+    mutating func addVariable(_ name: String) -> some Instruction {
+        assert(!mappings.keys.contains(name))
+        let variableInstruction = StackValueBPRelativeInstruction(index: numLocals + 2)
+        mappings[name] = variableInstruction
+        numLocals += 1
+        return variableInstruction
+    }
+    
     func debugDesc(depth: Int) -> String {
         var result = ""
         let indent = String(repeating: "\t", count: depth)
@@ -349,7 +367,7 @@ public class Parser {
         if try tokenizer.hasIdentifier("while", updateCurrentIndexOnMatch: true) != nil && parseExpression(tokenizer: tokenizer, instructions: &conditionExpression, variables: &variables) {
             try tokenizer.expectNewline()
             var loopedInstructions = [Instruction]()
-            while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end if" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
+            while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                 tokenizer.skipNewlines()
                 try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
                 try tokenizer.expectNewline()
@@ -362,8 +380,105 @@ public class Parser {
             instructions.append(contentsOf: loopedInstructions)
             let afterConditionInstructionCount = instructions.count
             instructions.append(JumpByInstruction(instructionCount: beforeConditionInstructionCount - afterConditionInstructionCount))
+        } else if tokenizer.hasIdentifier("with", updateCurrentIndexOnMatch: true) != nil {
+            let counterVariable = try tokenizer.expectIdentifier()
+            let counterVarInstruction = variables.addVariable(counterVariable)
+            
+            guard tokenizer.hasIdentifier("from", updateCurrentIndexOnMatch: true) != nil || tokenizer.hasSymbol("=", updateCurrentIndexOnMatch: true) != nil else {
+                throw ParseError.expectedIdentifier(string: "from", token: tokenizer.currentToken)
+            }
+            
+            var startNumber = [Instruction]()
+            if try !parseExpression(tokenizer: tokenizer, instructions: &startNumber, variables: &variables) {
+                throw ParseError.expectedExpression(token: tokenizer.currentToken)
+            }
+            
+            let stepSize: Int
+            if tokenizer.hasIdentifier("down", updateCurrentIndexOnMatch: true) != nil {
+                stepSize = -1
+            } else {
+                stepSize = 1
+            }
+            _ = try tokenizer.expectIdentifier("to")
+            
+            var endNumber = [Instruction]()
+            if try !parseExpression(tokenizer: tokenizer, instructions: &endNumber, variables: &variables) {
+                throw ParseError.expectedExpression(token: tokenizer.currentToken)
+            }
+            try tokenizer.expectNewline()
+            
+            var loopedInstructions = [Instruction]()
+            while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
+                tokenizer.skipNewlines()
+                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try tokenizer.expectNewline()
+            }
+            try tokenizer.expectIdentifiers("end", "repeat")
+                        
+            loopedInstructions.append(counterVarInstruction)
+            loopedInstructions.append(PushIntegerInstruction(integer: stepSize))
+            loopedInstructions.append(PushParameterCountInstruction(parameterCount: 2))
+            loopedInstructions.append(CallInstruction(message: "add"))
+            
+            instructions.append(counterVarInstruction)
+            instructions.append(PushStringInstruction(string: "into"))
+            instructions.append(contentsOf: startNumber)
+            instructions.append(PushParameterCountInstruction(parameterCount: 3))
+            instructions.append(CallInstruction(message: "put"))
+            
+            let beforeConditionInstructionCount = instructions.count
+            instructions.append(contentsOf: endNumber)
+            instructions.append(counterVarInstruction)
+            instructions.append(PushParameterCountInstruction(parameterCount: 2))
+            instructions.append(CallInstruction(message: "<="))
+            instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 2)) // +2 for the "jump back up" and the actual "jump by if false" instruction.
+            instructions.append(contentsOf: loopedInstructions)
+            let afterConditionInstructionCount = instructions.count
+            
+            instructions.append(JumpByInstruction(instructionCount: beforeConditionInstructionCount - afterConditionInstructionCount))
+            
         } else {
-            throw ParseError.expectedIdentifier(string: "while", token: tokenizer.currentToken)
+            var countExpression = [Instruction]()
+            _ = tokenizer.hasIdentifier("for", updateCurrentIndexOnMatch: true) // Optional "for".
+            if try !parseExpression(tokenizer: tokenizer, instructions: &countExpression, variables: &variables) {
+                throw ParseError.expectedExpression(token: tokenizer.currentToken)
+            }
+            _ = tokenizer.hasIdentifier("times", updateCurrentIndexOnMatch: true) // Optional "times".
+            try tokenizer.expectNewline()
+            
+            var loopedInstructions = [Instruction]()
+            while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
+                tokenizer.skipNewlines()
+                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try tokenizer.expectNewline()
+            }
+            try tokenizer.expectIdentifiers("end", "repeat")
+            
+            let counterVariable = variables.uniqueVariableName(":counter")
+            let counterVarInstruction = variables.addVariable(counterVariable)
+
+            loopedInstructions.insert(counterVarInstruction, at: 0)
+            loopedInstructions.insert(PushIntegerInstruction(integer: 1), at: 1)
+            loopedInstructions.insert(PushParameterCountInstruction(parameterCount: 2), at: 2)
+            loopedInstructions.insert(CallInstruction(message: "subtract"), at: 3)
+
+            instructions.append(counterVarInstruction)
+            instructions.append(PushStringInstruction(string: "into"))
+            instructions.append(contentsOf: countExpression)
+            instructions.append(PushParameterCountInstruction(parameterCount: 3))
+            instructions.append(CallInstruction(message: "put"))
+
+            let beforeConditionInstructionCount = instructions.count
+            instructions.append(counterVarInstruction)
+            instructions.append(PushIntegerInstruction(integer: 0))
+            instructions.append(PushParameterCountInstruction(parameterCount: 2))
+            instructions.append(CallInstruction(message: "<"))
+            instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 2)) // +2 for the "jump back up" and the actual "jump by if false" instruction.
+            instructions.append(contentsOf: loopedInstructions)
+            let afterConditionInstructionCount = instructions.count
+            
+            instructions.append(JumpByInstruction(instructionCount: beforeConditionInstructionCount - afterConditionInstructionCount))
+
         }
     }
 

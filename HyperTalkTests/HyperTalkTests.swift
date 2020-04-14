@@ -272,4 +272,32 @@ end main
 
         XCTAssertEqual(printInstructionOutput, "before\nlooping 5\nlooping 4\nlooping 3\nlooping 2\nlooping 1\nafter\n")
     }
+
+    func testForLoop() throws {
+        _ = try runScript("""
+function main
+    output "before"
+    repeat for 5 times
+        output "looping"
+    end repeat
+    output "after"
+end main
+""", filePath: #function)
+
+        XCTAssertEqual(printInstructionOutput, "before\nlooping\nlooping\nlooping\nlooping\nlooping\nafter\n")
+    }
+    
+    func testRepeatWithLoop() throws {
+        _ = try runScript("""
+function main
+    output "before"
+    repeat with x from 1 to 10
+        output "looping" && x
+    end repeat
+    output "after"
+end main
+""", filePath: #function)
+
+        XCTAssertEqual(printInstructionOutput, "before\nlooping 1\nlooping 2\nlooping 3\nlooping 4\nlooping 5\nlooping 6\nlooping 7\nlooping 8\nlooping 9\nlooping 10\nafter\n")
+    }
 }
