@@ -27,7 +27,7 @@ class HyperTalkTests: XCTestCase {
             context.builtinFunctions[key] = value
         }
         print("context = \(context)")
-        try! context.run("main")
+        try context.run("main")
         return (parser.script, context)
     }
     
