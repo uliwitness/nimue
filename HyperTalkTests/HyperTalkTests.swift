@@ -27,7 +27,7 @@ class HyperTalkTests: XCTestCase {
             for (key, value) in functions {
                 context.builtinFunctions[key] = value
             }
-            try context.run("main")
+            try context.run("main", isCommand: true)
         } catch {
             print("context = \(context)")
             throw error
@@ -77,7 +77,7 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], PushStringInstruction(string: "into")))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], PushStringInstruction(string: "foo")))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 4], PushParameterCountInstruction(parameterCount: 3)))
-        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], CallInstruction(message: "put")))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], CallInstruction(message: "put", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 6], ReturnInstruction(numVariables: 1)))
         XCTAssertEqual(context.stack.count, 0)
     }
@@ -122,10 +122,10 @@ end main
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction], ReserveStackInstruction(valueCount: 0)))
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 1], ParameterInstruction(index: 1)))
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 2], PushParameterCountInstruction(parameterCount: 1)))
-        XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 3], CallInstruction(message: "output")))
+        XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 3], CallInstruction(message: "output", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 4], ParameterInstruction(index: 2)))
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 5], PushParameterCountInstruction(parameterCount: 1)))
-        XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 6], CallInstruction(message: "output")))
+        XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 6], CallInstruction(message: "output", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[subFunc.firstInstruction + 7], ReturnInstruction(numVariables: 0)))
         let mainFunc = script.functionStarts["main"]!
         XCTAssertEqual(mainFunc.firstInstruction, 8)
@@ -134,7 +134,7 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction], ReserveStackInstruction(valueCount: 0)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 1], PushStringInstruction(string: "foo")))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], PushParameterCountInstruction(parameterCount: 1)))
-        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], CallInstruction(message: "subby")))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], CallInstruction(message: "subby", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 4], ReturnInstruction(numVariables: 0)))
         XCTAssertEqual(context.stack.count, 0)
     }
@@ -158,7 +158,7 @@ end main
         XCTAssertEqual(printInstructionOutput, """
 It works! sometimes... Hello, world! 1 ''
 fooLocalVar
--13.0
+-13
 
 """)
     }

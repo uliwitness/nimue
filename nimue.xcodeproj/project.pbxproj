@@ -18,6 +18,23 @@
 		558A684923E5F20D008266C0 /* HyperTalk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		55DF001D23DBCB97008700DA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DF001C23DBCB97008700DA /* main.swift */; };
 		55DF002423DBD8BE008700DA /* example1.nim in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55DF002323DBD884008700DA /* example1.nim */; };
+		55EBAECB24469AD20092F139 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAECA24469AD20092F139 /* AppDelegate.swift */; };
+		55EBAECD24469AD20092F139 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAECC24469AD20092F139 /* SceneDelegate.swift */; };
+		55EBAECF24469AD20092F139 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAECE24469AD20092F139 /* ViewController.swift */; };
+		55EBAED224469AD20092F139 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 55EBAED024469AD20092F139 /* Main.storyboard */; };
+		55EBAED424469AD80092F139 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 55EBAED324469AD80092F139 /* Assets.xcassets */; };
+		55EBAED724469AD80092F139 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 55EBAED524469AD80092F139 /* LaunchScreen.storyboard */; };
+		55EBAEE224469AD90092F139 /* HyperRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAEE124469AD90092F139 /* HyperRunnerTests.swift */; };
+		55EBAEFD24469E050092F139 /* HyperTalkIOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55EBAEF424469E040092F139 /* HyperTalkIOS.framework */; };
+		55EBAF0424469E050092F139 /* HyperTalkIOSTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAF0324469E050092F139 /* HyperTalkIOSTests.swift */; };
+		55EBAF0924469E050092F139 /* HyperTalkIOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 55EBAEF424469E040092F139 /* HyperTalkIOS.framework */; };
+		55EBAF0A24469E050092F139 /* HyperTalkIOS.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 55EBAEF424469E040092F139 /* HyperTalkIOS.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		55EBAF112446A0000092F139 /* Tokenizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 554DB00823E22EDE00319E6C /* Tokenizer.swift */; };
+		55EBAF122446A0000092F139 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5584237223E0E5E7006F3FF3 /* Parser.swift */; };
+		55EBAF132446A0000092F139 /* BaseInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5595A36D23E01F6500A4A672 /* BaseInstructions.swift */; };
+		55EBAF142446A0000092F139 /* BaseRunnableInstructions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 559717A023E020A200C49992 /* BaseRunnableInstructions.swift */; };
+		55EBAF152446A0000092F139 /* Variant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597179E23E0201E00C49992 /* Variant.swift */; };
+		55EBAF182446A6ED0092F139 /* main.hc in Resources */ = {isa = PBXBuildFile; fileRef = 55EBAF172446A6ED0092F139 /* main.hc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +51,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = 558A682A23E5EC61008266C0;
 			remoteInfo = HyperTalk;
+		};
+		55EBAEDE24469AD90092F139 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55EBAEC724469AD10092F139;
+			remoteInfo = HyperRunner;
+		};
+		55EBAEFE24469E050092F139 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55EBAEF324469E040092F139;
+			remoteInfo = HyperTalkIOS;
+		};
+		55EBAF0024469E050092F139 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55EBAEC724469AD10092F139;
+			remoteInfo = HyperRunner;
+		};
+		55EBAF0724469E050092F139 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 55DF001123DBCB97008700DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55EBAEF324469E040092F139;
+			remoteInfo = HyperTalkIOS;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -59,6 +104,17 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		55EBAEEE24469BB70092F139 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				55EBAF0A24469E050092F139 /* HyperTalkIOS.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -75,6 +131,23 @@
 		55DF001923DBCB97008700DA /* nimue */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nimue; sourceTree = BUILT_PRODUCTS_DIR; };
 		55DF001C23DBCB97008700DA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		55DF002323DBD884008700DA /* example1.nim */ = {isa = PBXFileReference; lastKnownFileType = text; path = example1.nim; sourceTree = "<group>"; };
+		55EBAEC824469AD20092F139 /* HyperRunner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HyperRunner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		55EBAECA24469AD20092F139 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		55EBAECC24469AD20092F139 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		55EBAECE24469AD20092F139 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		55EBAED124469AD20092F139 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		55EBAED324469AD80092F139 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		55EBAED624469AD80092F139 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		55EBAED824469AD90092F139 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55EBAEDD24469AD90092F139 /* HyperRunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HyperRunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		55EBAEE124469AD90092F139 /* HyperRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperRunnerTests.swift; sourceTree = "<group>"; };
+		55EBAEE324469AD90092F139 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55EBAEF424469E040092F139 /* HyperTalkIOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HyperTalkIOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		55EBAEF724469E040092F139 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55EBAEFC24469E040092F139 /* HyperTalkIOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HyperTalkIOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		55EBAF0324469E050092F139 /* HyperTalkIOSTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperTalkIOSTests.swift; sourceTree = "<group>"; };
+		55EBAF0524469E050092F139 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		55EBAF172446A6ED0092F139 /* main.hc */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.hc; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +171,36 @@
 			buildActionMask = 2147483647;
 			files = (
 				558A684823E5F20D008266C0 /* HyperTalk.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEC524469AD10092F139 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAF0924469E050092F139 /* HyperTalkIOS.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEDA24469AD90092F139 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEF124469E040092F139 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEF924469E040092F139 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAEFD24469E050092F139 /* HyperTalkIOS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,9 +239,13 @@
 		55DF001023DBCB97008700DA = {
 			isa = PBXGroup;
 			children = (
-				55DF001B23DBCB97008700DA /* nimue */,
+				55EBAEC924469AD20092F139 /* HyperRunner */,
 				558A682C23E5EC61008266C0 /* HyperTalk */,
+				55DF001B23DBCB97008700DA /* nimue */,
 				558A683723E5EC61008266C0 /* HyperTalkTests */,
+				55EBAEE024469AD90092F139 /* HyperRunnerTests */,
+				55EBAEF524469E040092F139 /* HyperTalkIOS */,
+				55EBAF0224469E050092F139 /* HyperTalkIOSTests */,
 				55DF001A23DBCB97008700DA /* Products */,
 				558A684723E5F20D008266C0 /* Frameworks */,
 			);
@@ -150,6 +257,10 @@
 				55DF001923DBCB97008700DA /* nimue */,
 				558A682B23E5EC61008266C0 /* HyperTalk.framework */,
 				558A683323E5EC61008266C0 /* HyperTalkTests.xctest */,
+				55EBAEC824469AD20092F139 /* HyperRunner.app */,
+				55EBAEDD24469AD90092F139 /* HyperRunnerTests.xctest */,
+				55EBAEF424469E040092F139 /* HyperTalkIOS.framework */,
+				55EBAEFC24469E040092F139 /* HyperTalkIOSTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -163,10 +274,58 @@
 			path = nimue;
 			sourceTree = "<group>";
 		};
+		55EBAEC924469AD20092F139 /* HyperRunner */ = {
+			isa = PBXGroup;
+			children = (
+				55EBAECA24469AD20092F139 /* AppDelegate.swift */,
+				55EBAECC24469AD20092F139 /* SceneDelegate.swift */,
+				55EBAECE24469AD20092F139 /* ViewController.swift */,
+				55EBAED024469AD20092F139 /* Main.storyboard */,
+				55EBAED324469AD80092F139 /* Assets.xcassets */,
+				55EBAED524469AD80092F139 /* LaunchScreen.storyboard */,
+				55EBAED824469AD90092F139 /* Info.plist */,
+				55EBAF172446A6ED0092F139 /* main.hc */,
+			);
+			path = HyperRunner;
+			sourceTree = "<group>";
+		};
+		55EBAEE024469AD90092F139 /* HyperRunnerTests */ = {
+			isa = PBXGroup;
+			children = (
+				55EBAEE124469AD90092F139 /* HyperRunnerTests.swift */,
+				55EBAEE324469AD90092F139 /* Info.plist */,
+			);
+			path = HyperRunnerTests;
+			sourceTree = "<group>";
+		};
+		55EBAEF524469E040092F139 /* HyperTalkIOS */ = {
+			isa = PBXGroup;
+			children = (
+				55EBAEF724469E040092F139 /* Info.plist */,
+			);
+			path = HyperTalkIOS;
+			sourceTree = "<group>";
+		};
+		55EBAF0224469E050092F139 /* HyperTalkIOSTests */ = {
+			isa = PBXGroup;
+			children = (
+				55EBAF0324469E050092F139 /* HyperTalkIOSTests.swift */,
+				55EBAF0524469E050092F139 /* Info.plist */,
+			);
+			path = HyperTalkIOSTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
 		558A682623E5EC61008266C0 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEEF24469E040092F139 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -231,13 +390,87 @@
 			productReference = 55DF001923DBCB97008700DA /* nimue */;
 			productType = "com.apple.product-type.tool";
 		};
+		55EBAEC724469AD10092F139 /* HyperRunner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55EBAEE824469AD90092F139 /* Build configuration list for PBXNativeTarget "HyperRunner" */;
+			buildPhases = (
+				55EBAEC424469AD10092F139 /* Sources */,
+				55EBAEC524469AD10092F139 /* Frameworks */,
+				55EBAEC624469AD10092F139 /* Resources */,
+				55EBAEEE24469BB70092F139 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				55EBAF0824469E050092F139 /* PBXTargetDependency */,
+			);
+			name = HyperRunner;
+			productName = HyperRunner;
+			productReference = 55EBAEC824469AD20092F139 /* HyperRunner.app */;
+			productType = "com.apple.product-type.application";
+		};
+		55EBAEDC24469AD90092F139 /* HyperRunnerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55EBAEE924469AD90092F139 /* Build configuration list for PBXNativeTarget "HyperRunnerTests" */;
+			buildPhases = (
+				55EBAED924469AD90092F139 /* Sources */,
+				55EBAEDA24469AD90092F139 /* Frameworks */,
+				55EBAEDB24469AD90092F139 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				55EBAEDF24469AD90092F139 /* PBXTargetDependency */,
+			);
+			name = HyperRunnerTests;
+			productName = HyperRunnerTests;
+			productReference = 55EBAEDD24469AD90092F139 /* HyperRunnerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		55EBAEF324469E040092F139 /* HyperTalkIOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55EBAF0B24469E050092F139 /* Build configuration list for PBXNativeTarget "HyperTalkIOS" */;
+			buildPhases = (
+				55EBAEEF24469E040092F139 /* Headers */,
+				55EBAEF024469E040092F139 /* Sources */,
+				55EBAEF124469E040092F139 /* Frameworks */,
+				55EBAEF224469E040092F139 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HyperTalkIOS;
+			productName = HyperTalkIOS;
+			productReference = 55EBAEF424469E040092F139 /* HyperTalkIOS.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		55EBAEFB24469E040092F139 /* HyperTalkIOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 55EBAF0E24469E050092F139 /* Build configuration list for PBXNativeTarget "HyperTalkIOSTests" */;
+			buildPhases = (
+				55EBAEF824469E040092F139 /* Sources */,
+				55EBAEF924469E040092F139 /* Frameworks */,
+				55EBAEFA24469E040092F139 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				55EBAEFF24469E050092F139 /* PBXTargetDependency */,
+				55EBAF0124469E050092F139 /* PBXTargetDependency */,
+			);
+			name = HyperTalkIOSTests;
+			productName = HyperTalkIOSTests;
+			productReference = 55EBAEFC24469E040092F139 /* HyperTalkIOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		55DF001123DBCB97008700DA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1130;
+				LastSwiftUpdateCheck = 1140;
 				LastUpgradeCheck = 1130;
 				ORGANIZATIONNAME = "Uli Kusterer";
 				TargetAttributes = {
@@ -249,6 +482,20 @@
 					};
 					55DF001823DBCB97008700DA = {
 						CreatedOnToolsVersion = 11.3.1;
+					};
+					55EBAEC724469AD10092F139 = {
+						CreatedOnToolsVersion = 11.4;
+					};
+					55EBAEDC24469AD90092F139 = {
+						CreatedOnToolsVersion = 11.4;
+						TestTargetID = 55EBAEC724469AD10092F139;
+					};
+					55EBAEF324469E040092F139 = {
+						CreatedOnToolsVersion = 11.4;
+					};
+					55EBAEFB24469E040092F139 = {
+						CreatedOnToolsVersion = 11.4;
+						TestTargetID = 55EBAEC724469AD10092F139;
 					};
 				};
 			};
@@ -268,6 +515,10 @@
 				55DF001823DBCB97008700DA /* nimue */,
 				558A682A23E5EC61008266C0 /* HyperTalk */,
 				558A683223E5EC61008266C0 /* HyperTalkTests */,
+				55EBAEC724469AD10092F139 /* HyperRunner */,
+				55EBAEDC24469AD90092F139 /* HyperRunnerTests */,
+				55EBAEF324469E040092F139 /* HyperTalkIOS */,
+				55EBAEFB24469E040092F139 /* HyperTalkIOSTests */,
 			);
 		};
 /* End PBXProject section */
@@ -281,6 +532,38 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		558A683123E5EC61008266C0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEC624469AD10092F139 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAED724469AD80092F139 /* LaunchScreen.storyboard in Resources */,
+				55EBAF182446A6ED0092F139 /* main.hc in Resources */,
+				55EBAED424469AD80092F139 /* Assets.xcassets in Resources */,
+				55EBAED224469AD20092F139 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEDB24469AD90092F139 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEF224469E040092F139 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEFA24469E040092F139 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -318,6 +601,44 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		55EBAEC424469AD10092F139 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAECF24469AD20092F139 /* ViewController.swift in Sources */,
+				55EBAECB24469AD20092F139 /* AppDelegate.swift in Sources */,
+				55EBAECD24469AD20092F139 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAED924469AD90092F139 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAEE224469AD90092F139 /* HyperRunnerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEF024469E040092F139 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAF142446A0000092F139 /* BaseRunnableInstructions.swift in Sources */,
+				55EBAF122446A0000092F139 /* Parser.swift in Sources */,
+				55EBAF112446A0000092F139 /* Tokenizer.swift in Sources */,
+				55EBAF152446A0000092F139 /* Variant.swift in Sources */,
+				55EBAF132446A0000092F139 /* BaseInstructions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		55EBAEF824469E040092F139 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				55EBAF0424469E050092F139 /* HyperTalkIOSTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -331,7 +652,46 @@
 			target = 558A682A23E5EC61008266C0 /* HyperTalk */;
 			targetProxy = 558A684A23E5F20D008266C0 /* PBXContainerItemProxy */;
 		};
+		55EBAEDF24469AD90092F139 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55EBAEC724469AD10092F139 /* HyperRunner */;
+			targetProxy = 55EBAEDE24469AD90092F139 /* PBXContainerItemProxy */;
+		};
+		55EBAEFF24469E050092F139 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55EBAEF324469E040092F139 /* HyperTalkIOS */;
+			targetProxy = 55EBAEFE24469E050092F139 /* PBXContainerItemProxy */;
+		};
+		55EBAF0124469E050092F139 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55EBAEC724469AD10092F139 /* HyperRunner */;
+			targetProxy = 55EBAF0024469E050092F139 /* PBXContainerItemProxy */;
+		};
+		55EBAF0824469E050092F139 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 55EBAEF324469E040092F139 /* HyperTalkIOS */;
+			targetProxy = 55EBAF0724469E050092F139 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		55EBAED024469AD20092F139 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				55EBAED124469AD20092F139 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		55EBAED524469AD80092F139 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				55EBAED624469AD80092F139 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		558A683D23E5EC61008266C0 /* Debug */ = {
@@ -561,6 +921,200 @@
 			};
 			name = Release;
 		};
+		55EBAEE424469AD90092F139 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperRunner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperRunner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		55EBAEE524469AD90092F139 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperRunner/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperRunner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		55EBAEE624469AD90092F139 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperRunnerTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperRunnerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HyperRunner.app/HyperRunner";
+			};
+			name = Debug;
+		};
+		55EBAEE724469AD90092F139 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperRunnerTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperRunnerTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HyperRunner.app/HyperRunner";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		55EBAF0C24469E050092F139 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = HyperTalkIOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkIOS;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		55EBAF0D24469E050092F139 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = HyperTalkIOS/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkIOS;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		55EBAF0F24469E050092F139 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperTalkIOSTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkIOSTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HyperRunner.app/HyperRunner";
+			};
+			name = Debug;
+		};
+		55EBAF1024469E050092F139 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = RCKXACKVZS;
+				INFOPLIST_FILE = HyperTalkIOSTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.thevoidsoftware.HyperTalkIOSTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HyperRunner.app/HyperRunner";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -596,6 +1150,42 @@
 			buildConfigurations = (
 				55DF002123DBCB97008700DA /* Debug */,
 				55DF002223DBCB97008700DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55EBAEE824469AD90092F139 /* Build configuration list for PBXNativeTarget "HyperRunner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55EBAEE424469AD90092F139 /* Debug */,
+				55EBAEE524469AD90092F139 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55EBAEE924469AD90092F139 /* Build configuration list for PBXNativeTarget "HyperRunnerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55EBAEE624469AD90092F139 /* Debug */,
+				55EBAEE724469AD90092F139 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55EBAF0B24469E050092F139 /* Build configuration list for PBXNativeTarget "HyperTalkIOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55EBAF0C24469E050092F139 /* Debug */,
+				55EBAF0D24469E050092F139 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		55EBAF0E24469E050092F139 /* Build configuration list for PBXNativeTarget "HyperTalkIOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				55EBAF0F24469E050092F139 /* Debug */,
+				55EBAF1024469E050092F139 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

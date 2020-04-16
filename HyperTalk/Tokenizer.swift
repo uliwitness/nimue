@@ -22,7 +22,7 @@ private extension Array {
 
 
 fileprivate let identifierCS = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols)
+fileprivate let operatorCS = CharacterSet.punctuationCharacters.union(CharacterSet.symbols).subtracting(CharacterSet(charactersIn: "\""))
 fileprivate let oneLineCommentStartCS = CharacterSet(charactersIn: "-")
 fileprivate let whitespaceCS = CharacterSet.whitespaces
 fileprivate let newlineCS = CharacterSet.newlines

@@ -14,7 +14,7 @@ do {
     print("\(parser.script)")
 
     var context = RunContext(script: parser.script)
-    try! context.run("main")
+    try context.run("main", isCommand: true)
 } catch {
     print("Error: \(error)")
 }

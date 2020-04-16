@@ -3,7 +3,7 @@ enum RuntimeError: Error {
     case tooFewOperands
     case tooManyOperands
     case zeroDivision
-    case unknownMessage(_ name: String)
+    case unknownMessage(_ name: String, isCommand: Bool)
     case unknownInstruction(_ name: String)
     case invalidPutDestination
 }
@@ -230,12 +230,13 @@ public struct RunContext {
         self.script = script
     }
     
-    public mutating func run(_ handler: String, _ params: Variant...) throws {
+    public mutating func run(_ handler: String, isCommand: Bool, _ params: Variant...) throws {
         for param in params.reversed() {
             stack.append(param)
         }
         stack.append(Variant(parameterCount: params.count))
-        currentInstruction = script.functionStarts[handler]?.firstInstruction ?? -1
+        let foundHandler = isCommand ? script.commandStarts[handler] : script.functionStarts[handler]
+        currentInstruction = foundHandler?.firstInstruction ?? -1
         backPointer = 1
 
         stack.append(Variant(instructionIndex: -1))
@@ -247,11 +248,13 @@ public struct RunContext {
         }
     }
         
-    public var builtinFunctions: [String:BuiltInFunction] = [
+    public var builtinCommands: [String:BuiltInFunction] = [
         "output": PrintInstructionFunc,
         "put": PutInstructionFunc,
         "add": AddCommandFunc,
         "subtract": SubtractCommandFunc,
+    ]
+    public var builtinFunctions: [String:BuiltInFunction] = [
         "-": SubtractInstructionFunc,
         "+": AddInstructionFunc,
         "*": MultiplyInstructionFunc,
@@ -265,6 +268,7 @@ public struct RunContext {
         "&": ConcatenateInstructionFunc,
         "&&": ConcatenateSpaceInstructionFunc,
     ]
+
 }
 
 protocol RunnableInstruction {
@@ -406,13 +410,19 @@ extension JumpByIfFalseInstruction : RunnableInstruction {
 
 extension CallInstruction : RunnableInstruction {
     func run(_ context: inout RunContext) throws {
-        if let destinationInstruction = context.script.functionStarts[message]?.firstInstruction {
+        if isCommand, let destinationInstruction = context.script.commandStarts[message]?.firstInstruction {
             let newBackPointer = context.stack.count
             context.stack.append(Variant(instructionIndex: context.currentInstruction + 1))
             context.stack.append(Variant(stackIndex: context.backPointer))
             context.backPointer = newBackPointer
             context.currentInstruction = destinationInstruction
-        } else if let builtinFunction = context.builtinFunctions[message] {
+        } else if !isCommand, let destinationInstruction = context.script.functionStarts[message]?.firstInstruction {
+            let newBackPointer = context.stack.count
+            context.stack.append(Variant(instructionIndex: context.currentInstruction + 1))
+            context.stack.append(Variant(stackIndex: context.backPointer))
+            context.backPointer = newBackPointer
+            context.currentInstruction = destinationInstruction
+        } else if !isCommand, let builtinFunction = context.builtinFunctions[message] {
             do {
                 let paramCount = try context.stack.popLast()!.parameterCount()
                 var args = [Variant]()
@@ -425,8 +435,21 @@ extension CallInstruction : RunnableInstruction {
                 print("error = \(error)\ncontext = \(context)")
                 throw error
             }
+        } else if isCommand, let builtinCommand = context.builtinCommands[message] {
+            do {
+                let paramCount = try context.stack.popLast()!.parameterCount()
+                var args = [Variant]()
+                for _ in 0 ..< paramCount {
+                    args.append(context.stack.popLast()!)
+                }
+                try builtinCommand(args, &context)
+                context.currentInstruction += 1
+            } catch {
+                print("error = \(error)\ncontext = \(context)")
+                throw error
+            }
         } else {
-            throw RuntimeError.unknownMessage(message)
+            throw RuntimeError.unknownMessage(message, isCommand: isCommand)
         }
     }
 }

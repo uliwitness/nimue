@@ -86,6 +86,7 @@ public struct JumpByIfFalseInstruction: Instruction, Equatable {
 /// you can consistently reference parameters and local variables.
 public struct CallInstruction: Instruction, Equatable {
     let message: String
+    let isCommand: Bool
 }
 
 /// Cleans up the stack space claimed for variables by ReserveStackInstruction

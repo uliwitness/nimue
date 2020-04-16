@@ -34,6 +34,8 @@ public struct Variant {
         case .integer(let int):
             return "\(int)"
         case .double(let dbl):
+            let int = Int(dbl)
+            if Double(int) == dbl { return "\(int)" }
             return "\(dbl)"
         case .boolean(let bool):
             return bool ? "true" : "false"
@@ -57,7 +59,9 @@ public struct Variant {
         case .integer(let int):
             return int
         case .double(let dbl):
-            return Int(dbl)
+            let int = Int(dbl)
+            if Double(int) == dbl { return int }
+            throw VariantError.expectedIntegerHere
         case .boolean(_):
             throw VariantError.expectedIntegerHere
         case .reference(let index):

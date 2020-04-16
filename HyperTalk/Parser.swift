@@ -27,7 +27,22 @@ struct Function {
 
 public struct Script: CustomDebugStringConvertible {
     var functionStarts = [String:Function]()
+    var commandStarts = [String:Function]()
     var instructions = [Instruction]()
+    
+    public init() {
+        
+    }
+    
+    public init(contentsOf url: URL) throws {
+        let appScript = try String(contentsOf: url)
+        let tokenizer = Tokenizer()
+        try tokenizer.addTokens(for: appScript, filePath: url.path)
+        
+        let parser = Parser()
+        try parser.parse(tokenizer)
+        self = parser.script
+    }
     
     public var debugDescription: String {
         var descr = "Script {\n"
@@ -36,11 +51,17 @@ public struct Script: CustomDebugStringConvertible {
         for (name, info) in functionStarts {
             functionNames[info.firstInstruction] = name
         }
-        
+        var commandNames = [Int:String]()
+        for (name, info) in commandStarts {
+            commandNames[info.firstInstruction] = name
+        }
+
         var index = 0
         for instr in instructions {
             if let funcName = functionNames[index], let funcInfo = functionStarts[funcName] {
-                descr.append("\t\(funcName):\n\(funcInfo.variables.debugDesc(depth: 2))\n")
+                descr.append("\t[F] \(funcName):\n\(funcInfo.variables.debugDesc(depth: 2))\n")
+            } else if let funcName = commandNames[index], let funcInfo = commandStarts[funcName] {
+                descr.append("\t[C] \(funcName):\n\(funcInfo.variables.debugDesc(depth: 2))\n")
             }
             
             descr.append("\t\t\(instr)\n")
@@ -129,15 +150,20 @@ public class Parser {
         } else if let double = tokenizer.hasNumber(updateCurrentIndexOnMatch: true) {
             instructions.append(PushDoubleInstruction(double: double))
         } else if let identStr = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true) {
-            if let identInstr = variables.mappings[identStr] {
-                instructions.append(identInstr)
-            } else if writable {
-                let variableInstruction = StackValueBPRelativeInstruction(index: variables.numLocals + 2)
-                variables.mappings[identStr] = variableInstruction
-                variables.numLocals += 1
-                instructions.append(variableInstruction)
+            if tokenizer.hasSymbol("(", updateCurrentIndexOnMatch: true) != nil { // Function call
+                try parseGenericHandlerCall(handlerName: identStr, isCommand: false, tokenizer: tokenizer, instructions: &instructions, variables: &variables)
+                try tokenizer.expectSymbol(")")
             } else {
-                instructions.append(PushStringInstruction(string: identStr))
+                if let identInstr = variables.mappings[identStr] {
+                    instructions.append(identInstr)
+                } else if writable {
+                    let variableInstruction = StackValueBPRelativeInstruction(index: variables.numLocals + 2)
+                    variables.mappings[identStr] = variableInstruction
+                    variables.numLocals += 1
+                    instructions.append(variableInstruction)
+                } else {
+                    instructions.append(PushStringInstruction(string: identStr))
+                }
             }
         } else {
             return false
@@ -232,7 +258,7 @@ public class Parser {
             appendInstructions(from: rhs, to: &instructions)
             appendInstructions(from: lhs, to: &instructions)
             instructions.append(PushParameterCountInstruction(parameterCount: 2))
-            instructions.append(CallInstruction(message: opName))
+            instructions.append(CallInstruction(message: opName, isCommand: false))
         }
     }
     
@@ -244,7 +270,7 @@ public class Parser {
         var root = Operation.operand(firstArgInstructions)
 
         while true {
-            guard let currentOperator = tokenizer.hasSymbol(), currentOperator != "\n" else { break }
+            guard let currentOperator = tokenizer.hasSymbol(), currentOperator.trimmingCharacters(in: CharacterSet(charactersIn: "\n(){}[]")).count > 0 else { break }
             if forbiddenOperators.contains(currentOperator) { break }
             
             let oldIndex = tokenizer.currentIndex
@@ -323,21 +349,21 @@ public class Parser {
                 instructions.append(contentsOf: valueInstructions)
             }
             instructions.append(PushParameterCountInstruction(parameterCount: paramCount))
-            instructions.append(CallInstruction(message: commandSyntax.identifiers.joined(separator: "")))
+            instructions.append(CallInstruction(message: commandSyntax.identifiers.joined(separator: ""), isCommand: true))
             return true
         }
         
         return false
     }
     
-    private func parseGenericHandlerCall(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
-        let functionName = try tokenizer.expectIdentifier()
+    private func parseGenericHandlerCall(handlerName: String? = nil, isCommand: Bool, tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+        let functionName = try handlerName ?? tokenizer.expectIdentifier()
         
         // Parse parameters separately into `params`:
         var params = [[Instruction]]()
         while true {
             var paramInstructions = [Instruction]()
-            if try !parseExpression(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, forbiddenOperators: [","]) {
+            if try !parseExpression(tokenizer: tokenizer, instructions: &paramInstructions, variables: &variables, forbiddenOperators: [",", ")"]) {
                 break
             }
             params.append(paramInstructions)
@@ -358,7 +384,7 @@ public class Parser {
         instructions.append(PushParameterCountInstruction(parameterCount: params.count))
         
         // Actual CALL instruction:
-        instructions.append(CallInstruction(message: functionName))
+        instructions.append(CallInstruction(message: functionName, isCommand: isCommand))
     }
     
     private func parseLoop(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
@@ -418,19 +444,19 @@ public class Parser {
             loopedInstructions.append(counterVarInstruction)
             loopedInstructions.append(PushIntegerInstruction(integer: stepSize))
             loopedInstructions.append(PushParameterCountInstruction(parameterCount: 2))
-            loopedInstructions.append(CallInstruction(message: "add"))
+            loopedInstructions.append(CallInstruction(message: "add", isCommand: true))
             
             instructions.append(counterVarInstruction)
             instructions.append(PushStringInstruction(string: "into"))
             instructions.append(contentsOf: startNumber)
             instructions.append(PushParameterCountInstruction(parameterCount: 3))
-            instructions.append(CallInstruction(message: "put"))
+            instructions.append(CallInstruction(message: "put", isCommand: true))
             
             let beforeConditionInstructionCount = instructions.count
             instructions.append(contentsOf: endNumber)
             instructions.append(counterVarInstruction)
             instructions.append(PushParameterCountInstruction(parameterCount: 2))
-            instructions.append(CallInstruction(message: "<="))
+            instructions.append(CallInstruction(message: "<=", isCommand: false))
             instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 2)) // +2 for the "jump back up" and the actual "jump by if false" instruction.
             instructions.append(contentsOf: loopedInstructions)
             let afterConditionInstructionCount = instructions.count
@@ -460,19 +486,19 @@ public class Parser {
             loopedInstructions.insert(counterVarInstruction, at: 0)
             loopedInstructions.insert(PushIntegerInstruction(integer: 1), at: 1)
             loopedInstructions.insert(PushParameterCountInstruction(parameterCount: 2), at: 2)
-            loopedInstructions.insert(CallInstruction(message: "subtract"), at: 3)
+            loopedInstructions.insert(CallInstruction(message: "subtract", isCommand: true), at: 3)
 
             instructions.append(counterVarInstruction)
             instructions.append(PushStringInstruction(string: "into"))
             instructions.append(contentsOf: countExpression)
             instructions.append(PushParameterCountInstruction(parameterCount: 3))
-            instructions.append(CallInstruction(message: "put"))
+            instructions.append(CallInstruction(message: "put", isCommand: true))
 
             let beforeConditionInstructionCount = instructions.count
             instructions.append(counterVarInstruction)
             instructions.append(PushIntegerInstruction(integer: 0))
             instructions.append(PushParameterCountInstruction(parameterCount: 2))
-            instructions.append(CallInstruction(message: "<"))
+            instructions.append(CallInstruction(message: "<", isCommand: false))
             instructions.append(JumpByIfFalseInstruction(instructionCount: loopedInstructions.count + 2)) // +2 for the "jump back up" and the actual "jump by if false" instruction.
             instructions.append(contentsOf: loopedInstructions)
             let afterConditionInstructionCount = instructions.count
@@ -567,10 +593,10 @@ public class Parser {
         }
         
         // Parse a regular handler call:
-        try parseGenericHandlerCall(tokenizer: tokenizer, instructions: &instructions, variables: &variables)
+        try parseGenericHandlerCall(isCommand: true, tokenizer: tokenizer, instructions: &instructions, variables: &variables)
     }
     
-    private func parseFunction(tokenizer: Tokenizer) throws {
+    private func parseHandler(tokenizer: Tokenizer, isCommand: Bool) throws {
         var function = Function(firstInstruction: script.instructions.count)
         let functionName = try tokenizer.expectIdentifier()
         
@@ -605,7 +631,11 @@ public class Parser {
         script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numLocals)
         
         // Add fully-parsed function to script:
-        script.functionStarts[functionName] = function
+        if isCommand {
+            script.commandStarts[functionName] = function
+        } else {
+            script.functionStarts[functionName] = function
+        }
     }
     
     public func parse( _ tokenizer: Tokenizer) throws {
@@ -615,9 +645,9 @@ public class Parser {
             let word = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true)
             switch word {
             case "on":
-                try parseFunction(tokenizer: tokenizer)
+                try parseHandler(tokenizer: tokenizer, isCommand: true)
             case "function":
-                try parseFunction(tokenizer: tokenizer)
+                try parseHandler(tokenizer: tokenizer, isCommand: false)
             default:
                 tokenizer.skipLine()
             }
