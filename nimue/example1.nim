@@ -8,7 +8,7 @@ on doThang appName, argument, arg2, arg3
     output fooLocalVar
 end doThang
 
-function main
+on main
     local myLocalVar
     doThang "Hello, world!", 1, 42.5
     put 1 + 2 * 3 - 4 * 5 into otherVar

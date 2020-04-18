@@ -11,7 +11,6 @@ enum RuntimeError: Error {
 func PrintInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
     if args.count == 1 {
         try print("\(args[0].string(stack: context.stack))")
-        return
     } else if args.count < 1 {
         throw RuntimeError.tooFewOperands
     } else {
@@ -242,12 +241,14 @@ public struct RunContext {
         stack.append(Variant(instructionIndex: -1))
         stack.append(Variant(stackIndex: -1))
         
+        if currentInstruction < 0 { throw RuntimeError.unknownMessage(handler, isCommand: isCommand) }
+        
         while currentInstruction >= 0 {
             guard let currInstr = script.instructions[currentInstruction] as? RunnableInstruction else { throw RuntimeError.unknownInstruction("\(script.instructions[currentInstruction])") }
             try currInstr.run(&self)
         }
     }
-        
+    
     public var builtinCommands: [String:BuiltInFunction] = [
         "output": PrintInstructionFunc,
         "put": PutInstructionFunc,
@@ -278,6 +279,13 @@ protocol RunnableInstruction {
 extension RunnableInstruction {
     func run(_ context: inout RunContext) throws {
         fatalError("Unknown instruction \(self)")
+    }
+}
+
+extension PushUnsetInstruction : RunnableInstruction {
+    func run(_ context: inout RunContext) throws {
+        context.stack.append(Variant())
+        context.currentInstruction += 1
     }
 }
 
@@ -409,6 +417,12 @@ extension JumpByIfFalseInstruction : RunnableInstruction {
 }
 
 extension CallInstruction : RunnableInstruction {
+    /// Stack during a call looks like:
+    /// ... params
+    /// paramCount
+    /// returnAddress ← back pointer
+    /// backPointer
+    /// ... variables
     func run(_ context: inout RunContext) throws {
         if isCommand, let destinationInstruction = context.script.commandStarts[message]?.firstInstruction {
             let newBackPointer = context.stack.count
@@ -455,15 +469,31 @@ extension CallInstruction : RunnableInstruction {
 }
 
 extension ReturnInstruction : RunnableInstruction {
+    /// Stack at end of a call looks like:
+    /// ... params
+    /// paramCount
+    /// returnAddress ← back pointer
+    /// backPointer
+    /// ... variables
+    /// returnValue
     func run(_ context: inout RunContext) throws {
+        guard let returnValue = context.stack.popLast() else { throw RuntimeError.stackIndexOutOfRange }
+        let numVariables = context.stack.count - (context.backPointer + 2)
         for _ in 0 ..< numVariables {
             context.stack.removeLast()
         }
+        
         context.backPointer = try context.stack.popLast()!.stackIndex()
         context.currentInstruction = try context.stack.popLast()!.instructionIndex()
         let paramCount = try context.stack.popLast()!.parameterCount()
         for _ in 0 ..< paramCount {
             context.stack.removeLast()
+        }
+        
+        if isCommand && context.backPointer >= 0 { // If this is the top-level call, just push the result like a function would, as there is no calling stack frame with a "result" variable.
+            context.stack[context.backPointer + Variables.resultVarBPIndex] = returnValue
+        } else {
+            context.stack.append(returnValue)
         }
     }
 }

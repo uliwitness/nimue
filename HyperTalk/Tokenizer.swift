@@ -11,6 +11,7 @@ public enum ParseError: Error {
     case expectedString(token: Token?)
     case expectedValue(token: Token?)
     case expectedExpression(token: Token?)
+    case resultMissing
 }
 
 private extension Array {

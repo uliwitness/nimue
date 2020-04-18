@@ -79,6 +79,13 @@ struct Variables: CustomDebugStringConvertible {
     var mappings = [String: Instruction]()
     var numLocals: Int = 0
     
+    static let localVarsBPOffset = 2
+    static let resultVarBPIndex = localVarsBPOffset
+    
+    init() {
+        addVariable("result")
+    }
+    
     func uniqueVariableName(_ hint: String) -> String {
         var candidate = hint
         var x = 2
@@ -89,9 +96,10 @@ struct Variables: CustomDebugStringConvertible {
         return candidate
     }
     
+    @discardableResult
     mutating func addVariable(_ name: String) -> some Instruction {
         assert(!mappings.keys.contains(name))
-        let variableInstruction = StackValueBPRelativeInstruction(index: numLocals + 2)
+        let variableInstruction = StackValueBPRelativeInstruction(index: numLocals + Variables.localVarsBPOffset)
         mappings[name] = variableInstruction
         numLocals += 1
         return variableInstruction
@@ -103,7 +111,7 @@ struct Variables: CustomDebugStringConvertible {
         
         for mapping in mappings {
             if let paramInstr = mapping.value as? StackValueBPRelativeInstruction {
-                result += "\(indent)\"\(mapping.key)\"\tvar[\(paramInstr.index)]\n"
+                result += "\(indent)\"\(mapping.key)\"\tvar[\(paramInstr.index - Variables.localVarsBPOffset)]\n"
             } else if let paramInstr = mapping.value as? ParameterInstruction {
                 result += "\(indent)\"\(mapping.key)\"\tparam[\(paramInstr.index)]\n"
             } else {
@@ -387,7 +395,7 @@ public class Parser {
         instructions.append(CallInstruction(message: functionName, isCommand: isCommand))
     }
     
-    private func parseLoop(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+    private func parseLoop(tokenizer: Tokenizer, insideCommand: Bool, instructions: inout [Instruction], variables: inout Variables) throws {
         try tokenizer.expectIdentifier("repeat")
         var conditionExpression = [Instruction]()
         if try tokenizer.hasIdentifier("while", updateCurrentIndexOnMatch: true) != nil && parseExpression(tokenizer: tokenizer, instructions: &conditionExpression, variables: &variables) {
@@ -395,7 +403,7 @@ public class Parser {
             var loopedInstructions = [Instruction]()
             while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                 tokenizer.skipNewlines()
-                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &loopedInstructions, variables: &variables)
                 try tokenizer.expectNewline()
             }
             try tokenizer.expectIdentifiers("end", "repeat")
@@ -436,7 +444,7 @@ public class Parser {
             var loopedInstructions = [Instruction]()
             while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                 tokenizer.skipNewlines()
-                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &loopedInstructions, variables: &variables)
                 try tokenizer.expectNewline()
             }
             try tokenizer.expectIdentifiers("end", "repeat")
@@ -475,7 +483,7 @@ public class Parser {
             var loopedInstructions = [Instruction]()
             while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end repeat" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                 tokenizer.skipNewlines()
-                try parseOneLine(tokenizer: tokenizer, instructions: &loopedInstructions, variables: &variables)
+                try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &loopedInstructions, variables: &variables)
                 try tokenizer.expectNewline()
             }
             try tokenizer.expectIdentifiers("end", "repeat")
@@ -508,11 +516,11 @@ public class Parser {
         }
     }
 
-    private func parseConditional(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+    private func parseConditional(tokenizer: Tokenizer, insideCommand: Bool, instructions: inout [Instruction], variables: inout Variables) throws {
         try tokenizer.expectIdentifier("if")
         var conditionExpression = [Instruction]()
         if try parseExpression(tokenizer: tokenizer, instructions: &conditionExpression, variables: &variables) {
-            _ = tokenizer.hasSymbol("\n", updateCurrentIndexOnMatch: true) // Allow for a return before the "then", if desired.
+            _ = tokenizer.hasSymbol("\n", updateCurrentIndexOnMatch: true) // Allow for a line break before the "then", if desired.
             try tokenizer.expectIdentifier("then")
             var trueInstructions = [Instruction]()
             var falseInstructions = [Instruction]()
@@ -520,12 +528,12 @@ public class Parser {
             
             // Parse "true" case:
             if tokenizer.hasSymbol("\n", updateCurrentIndexOnMatch: true) == nil { // Single-line "if" statements have their statement on the same line.
-                try parseOneLine(tokenizer: tokenizer, instructions: &trueInstructions, variables: &variables)
+                try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &trueInstructions, variables: &variables)
             } else { // Multi-line if has the statements on their own lines below the "then" line.
                 needsEndIf = true
                 while tokenizer.hasIdentifier("end") == nil && tokenizer.hasIdentifier("else") == nil { // Intentionally don't parse for "end if" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                     tokenizer.skipNewlines()
-                    try parseOneLine(tokenizer: tokenizer, instructions: &trueInstructions, variables: &variables)
+                    try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &trueInstructions, variables: &variables)
                     try tokenizer.expectNewline()
                 }
             }
@@ -536,12 +544,12 @@ public class Parser {
             if tokenizer.hasIdentifier("else", updateCurrentIndexOnMatch: true) != nil {
                 if tokenizer.hasSymbol("\n", updateCurrentIndexOnMatch: true) == nil { // Single-line "else" statements have their statement on the same line.
                     needsEndIf = false
-                    try parseOneLine(tokenizer: tokenizer, instructions: &falseInstructions, variables: &variables)
+                    try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &falseInstructions, variables: &variables)
                 } else { // Multi-line if has the statements on their own lines below the "then" line.
                     needsEndIf = true
                     while tokenizer.hasIdentifier("end") == nil { // Intentionally don't parse for "end if" here, so we catch unbalanced "end" statements with the expectIdentifiers() below if possible.
                         tokenizer.skipNewlines()
-                        try parseOneLine(tokenizer: tokenizer, instructions: &falseInstructions, variables: &variables)
+                        try parseOneLine(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &falseInstructions, variables: &variables)
                         try tokenizer.expectNewline()
                     }
                 }
@@ -567,17 +575,17 @@ public class Parser {
         }
     }
 
-    private func parseOneLine(tokenizer: Tokenizer, instructions: inout [Instruction], variables: inout Variables) throws {
+    private func parseOneLine(tokenizer: Tokenizer, insideCommand: Bool, instructions: inout [Instruction], variables: inout Variables) throws {
         
         // Loop:
         if tokenizer.hasIdentifier("repeat") != nil {
-            try parseLoop(tokenizer: tokenizer, instructions: &instructions, variables: &variables)
+            try parseLoop(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &instructions, variables: &variables)
             return
         }
         
-        // Cobditional:
+        // Conditional:
         if tokenizer.hasIdentifier("if") != nil {
-            try parseConditional(tokenizer: tokenizer, instructions: &instructions, variables: &variables)
+            try parseConditional(tokenizer: tokenizer, insideCommand: insideCommand, instructions: &instructions, variables: &variables)
             return
         }
         
@@ -592,6 +600,19 @@ public class Parser {
             return
         }
         
+        // Try a "return" statement:
+        var returnValueInstructions = [Instruction]()
+        if tokenizer.hasIdentifier("return", updateCurrentIndexOnMatch: true) != nil {
+            if tokenizer.hasNewline() { // No return value given
+                returnValueInstructions.append(PushUnsetInstruction())
+            } else {
+                guard try parseExpression(tokenizer: tokenizer, instructions: &returnValueInstructions, variables: &variables) else  { throw ParseError.expectedExpression(token: tokenizer.currentToken) }
+            }
+            instructions.append(contentsOf: returnValueInstructions)
+            instructions.append(ReturnInstruction(isCommand: insideCommand))
+            return
+        }
+
         // Parse a regular handler call:
         try parseGenericHandlerCall(isCommand: true, tokenizer: tokenizer, instructions: &instructions, variables: &variables)
     }
@@ -600,6 +621,7 @@ public class Parser {
         var function = Function(firstInstruction: script.instructions.count)
         let functionName = try tokenizer.expectIdentifier()
         
+        let reserveStackInstrIndex = script.instructions.count
         script.instructions.append(ReserveStackInstruction(valueCount: 0))
         
         // Parse list of parameter variable names:
@@ -619,16 +641,17 @@ public class Parser {
         // Parse lines of commands until we hit the "end" token:
         while tokenizer.hasIdentifier("end") == nil {
             tokenizer.skipNewlines()
-            try parseOneLine(tokenizer: tokenizer, instructions: &script.instructions, variables: &function.variables)
+            try parseOneLine(tokenizer: tokenizer, insideCommand: isCommand, instructions: &script.instructions, variables: &function.variables)
             try tokenizer.expectNewline()
         }
         
-        script.instructions.append(ReturnInstruction(numVariables: function.variables.numLocals))
+        script.instructions.append(PushUnsetInstruction())
+        script.instructions.append(ReturnInstruction(isCommand: isCommand))
         
         try tokenizer.expectIdentifier("end")
         try tokenizer.expectIdentifier(functionName)
         
-        script.instructions[function.firstInstruction] = ReserveStackInstruction(valueCount: function.variables.numLocals)
+        script.instructions[reserveStackInstrIndex] = ReserveStackInstruction(valueCount: function.variables.numLocals)
         
         // Add fully-parsed function to script:
         if isCommand {

@@ -3,6 +3,9 @@ public protocol Instruction {
     
 }
 
+public struct PushUnsetInstruction: Instruction, Equatable {
+}
+
 public struct PushStringInstruction: Instruction, Equatable {
     let string: String
 }
@@ -89,11 +92,14 @@ public struct CallInstruction: Instruction, Equatable {
     let isCommand: Bool
 }
 
-/// Cleans up the stack space claimed for variables by ReserveStackInstruction
-/// and then restores the saved back pointer (BP) and return address (PC) from
-/// the stack. It will then remove the parameters from the stack as well.
+/// Pops the backmost value off the stack, then cleans up the stack space
+/// claimed for variables by ReserveStackInstruction (by calculating the number
+/// of variables based on the back pointer) and then restores the saved
+/// back pointer (BP) and return address (PC) from the stack. It will then
+/// remove the parameters from the stack as well and push the value from the
+/// first step so it is available as the return value.
 public struct ReturnInstruction: Instruction, Equatable {
-    let numVariables: Int
+    let isCommand: Bool
 }
 
 /// Push a reference to the given stack value on the stack
