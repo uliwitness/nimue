@@ -17,7 +17,7 @@ class HyperTalkTests: XCTestCase {
     var tokenizer: Tokenizer!
     var parser: Parser!
     
-    func runScript(_ text: String, filePath: String, commands: [String:RunContext.BuiltInFunction] = [:], functions: [String:RunContext.BuiltInFunction] = [:]) throws -> (Script, RunContext) {
+    func runScript(_ text: String, filePath: String, commands: [String:RunContext.BuiltInFunction] = [:], functions: [String:RunContext.BuiltInFunction] = [:]) throws -> (Script, RunContext, Variant?) {
         printInstructionOutput = ""
         try tokenizer.addTokens(for: text, filePath: filePath)
         try parser.parse(tokenizer)
@@ -36,7 +36,8 @@ class HyperTalkTests: XCTestCase {
             print("context = \(context)")
             throw error
         }
-        return (parser.script, context)
+        if context.stack.count > 1 { throw RuntimeError.stackNotCleanedUpAtEndOfCall(exessElementCount: context.stack.count - 1) }
+        return (parser.script, context, context.stack.last)
     }
     
     override func setUp() {
@@ -49,7 +50,7 @@ class HyperTalkTests: XCTestCase {
     }
     
     func testEmptyFunctionCall() throws {
-        let (script, context) = try runScript("""
+        let (script, _, result) = try runScript("""
 on main
 end main
 """, filePath: #function)
@@ -61,11 +62,11 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction], ReserveStackInstruction(valueCount: 1)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 1], PushUnsetInstruction()))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], ReturnInstruction(isCommand: true)))
-        XCTAssertEqual(context.stack.count, 1)
+        XCTAssertEqual(result, Variant())
     }
     
     func testAssignment() throws {
-        let (script, context) = try runScript("""
+        let (script, _, result) = try runScript("""
     on main
         put "foo" into myFoo
     end main
@@ -85,11 +86,11 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], CallInstruction(message: "put", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 6], PushUnsetInstruction()))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 7], ReturnInstruction(isCommand: true)))
-        XCTAssertEqual(context.stack.count, 1)
+        XCTAssertEqual(result, Variant())
     }
     
     func testParameters() throws {
-        let (script, context) = try runScript("""
+        let (script, _, result) = try runScript("""
     on main arg1, arg2
     end main
     """, filePath: #function)
@@ -104,11 +105,11 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction], ReserveStackInstruction(valueCount: 1)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 1], PushUnsetInstruction()))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], ReturnInstruction(isCommand: true)))
-        XCTAssertEqual(context.stack.count, 1)
+        XCTAssertEqual(result, Variant())
     }
 
     func testSubHandlerCall() throws {
-        let (script, context) = try runScript("""
+        let (script, _, result) = try runScript("""
     on subby arg1, arg2
         output arg1
         output arg2
@@ -145,7 +146,7 @@ end main
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], CallInstruction(message: "subby", isCommand: true)))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 4], PushUnsetInstruction()))
         XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], ReturnInstruction(isCommand: true)))
-        XCTAssertEqual(context.stack.count, 1)
+        XCTAssertEqual(result, Variant())
     }
     
     func testSomeExpressions() throws {
@@ -312,5 +313,53 @@ end main
 """, filePath: #function)
 
         XCTAssertEqual(printInstructionOutput, "before\nlooping 1\nlooping 2\nlooping 3\nlooping 4\nlooping 5\nlooping 6\nlooping 7\nlooping 8\nlooping 9\nlooping 10\nafter\n")
+    }
+
+    func testCommandHandlerTopLevelReturnValue() throws {
+        let (script, _, result) = try runScript("""
+on main
+    return "The Outer Worlds"
+    output "ignored"
+end main
+""", filePath: #function)
+        XCTAssertEqual(script.commandStarts.count, 1)
+        let mainFunc = script.commandStarts["main"]!
+        XCTAssertEqual(mainFunc.firstInstruction, 0)
+        XCTAssertEqual(mainFunc.variables.numLocals, 1)
+        XCTAssertEqual(mainFunc.variables.mappings.count, 1)
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction], ReserveStackInstruction(valueCount: 1)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 1], PushStringInstruction(string: "The Outer Worlds")))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], ReturnInstruction(isCommand: true)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], PushStringInstruction(string: "ignored")))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 4], PushParameterCountInstruction(parameterCount: 1)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], CallInstruction(message: "output", isCommand: true)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 6], PushUnsetInstruction()))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 7], ReturnInstruction(isCommand: true)))
+        XCTAssertEqual(result, Variant("The Outer Worlds"))
+    }
+
+    func testCommandHandlerTopLevelNoReturnValue() throws {
+        let (script, _, result) = try runScript("""
+on main
+    return
+    output "ignored"
+end main
+""", filePath: #function)
+        XCTAssertEqual(script.commandStarts.count, 1)
+        let mainFunc = script.commandStarts["main"]!
+        XCTAssertEqual(mainFunc.firstInstruction, 0)
+        XCTAssertEqual(mainFunc.variables.numLocals, 1)
+        XCTAssertEqual(mainFunc.variables.mappings.count, 1)
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction], ReserveStackInstruction(valueCount: 1)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 1], PushUnsetInstruction()))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 2], ReturnInstruction(isCommand: true)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 3], PushStringInstruction(string: "ignored")))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 4], PushParameterCountInstruction(parameterCount: 1)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 5], CallInstruction(message: "output", isCommand: true)))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 6], PushUnsetInstruction()))
+        XCTAssert(equalInstructions(script.instructions[mainFunc.firstInstruction + 7], ReturnInstruction(isCommand: true)))
+        XCTAssertEqual(result, Variant())
+
+        XCTAssertEqual(printInstructionOutput, "")
     }
 }

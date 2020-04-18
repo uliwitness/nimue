@@ -24,12 +24,24 @@ public enum VariantError: Error {
     case expectedNativeObject
 }
 
-struct WeakHolder {
-    weak var object: AnyObject?
+class HyperTalkObject: Equatable {
+    let id: Int
+    
+    internal init(id: Int) {
+        self.id = id
+    }
+
+    static func == (lhs: HyperTalkObject, rhs: HyperTalkObject) -> Bool {
+        return lhs.id == rhs.id
+    }
+}
+
+struct WeakHolder: Equatable {
+    weak var object: HyperTalkObject?
 }
 
 /// The type as which Variant stores all its possible kinds of contents.
-enum Value {
+enum Value: Equatable {
     /// No value has been set yet. Can be treated like an empty string by scripters, but can be distinguished i.e. to find out whether an array item is missing or empty.
     case unset
     /// An empty string.
@@ -51,14 +63,14 @@ enum Value {
     /// The parameter count of a handler call on the stack. This is used internally to allow variable parameter counts and should not be accessed by scripters except indirectly when asking for the parameter count or retrieving a parameter value. Violating this should result in a VariantError.attemptToAccessParameterCount.
     case parameterCount(_ : Int)
     /// A native Swift object. This is used internally to allow using native objects in the implementation. Violating this should result in a VariantError.attemptToAccessParameterCount.
-    case nativeObject(_ : Any)
+    case nativeObject(_ : HyperTalkObject)
     /// Version of nativeObject that references the object weakly.
     case weakNativeObject(_ : WeakHolder)
 }
 
 /// A single data type that can hold all data types supported by the scripting language and will convert between types where appropriate to maintain our "everything is a string" illusion.
 /// This type is used for the elements of the stack (as in, where variables and parameters go) and as such supports some additional internal types that the scripting language does not expose.
-public struct Variant {
+public struct Variant: Equatable {
     var value: Value
     
     /// Retrieve this value's contents as a text string.
@@ -279,7 +291,7 @@ public struct Variant {
     /// Retrieve the native object referenced in this variant, if this variant is a native object.
     /// If the value is a weak native object, this may return NIL if the referenced object has gone away.
     /// If the value is any other type, this throws.
-    func nativeObject<T>() throws -> T? {
+    func nativeObject<T: HyperTalkObject>() throws -> T? {
         if case let .nativeObject(obj) = value {
             if let object = obj as? T {
                 return object
@@ -349,13 +361,13 @@ public struct Variant {
     
     /// Create a value referencing a native object.
     /// This is an internal, "hard" type that shouldn't be converted or stored to disk.
-    init(nativeObject object: Any) {
+    init(nativeObject object: HyperTalkObject) {
         value = .nativeObject(object)
     }
     
     /// Create a value referencing a native object, but only as a weak reference.
     /// This is an internal, "hard" type that shouldn't be converted or stored to disk.
-    init(weakNativeObject object: AnyObject) {
+    init(weakNativeObject object: HyperTalkObject) {
         value = .weakNativeObject(WeakHolder(object: object))
     }
 }
