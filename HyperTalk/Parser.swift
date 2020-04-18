@@ -144,6 +144,14 @@ public class Parser {
             SyntaxElement(identifiers: ["from"], valueKind: .container)
         ])
     ]
+    public var constants: [String: Instruction] = [
+        "quote": PushStringInstruction(string: "\""),
+        "return": PushStringInstruction(string: "\r"),
+        "linefeed": PushStringInstruction(string: "\n"),
+        "newline": PushStringInstruction(string: "\n"),
+        "tab": PushStringInstruction(string: "\t"),
+        "pi": PushDoubleInstruction(double: Double.pi)
+    ]
     
     public init() {
         
@@ -158,7 +166,9 @@ public class Parser {
         } else if let double = tokenizer.hasNumber(updateCurrentIndexOnMatch: true) {
             instructions.append(PushDoubleInstruction(double: double))
         } else if let identStr = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true) {
-            if tokenizer.hasSymbol("(", updateCurrentIndexOnMatch: true) != nil { // Function call
+            if let foundConstantInstruction = constants[identStr] {
+                instructions.append(foundConstantInstruction)
+            } else if tokenizer.hasSymbol("(", updateCurrentIndexOnMatch: true) != nil { // Function call
                 try parseGenericHandlerCall(handlerName: identStr, isCommand: false, tokenizer: tokenizer, instructions: &instructions, variables: &variables)
                 try tokenizer.expectSymbol(")")
             } else {

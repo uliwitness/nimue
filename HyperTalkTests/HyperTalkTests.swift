@@ -22,7 +22,6 @@ class HyperTalkTests: XCTestCase {
         try tokenizer.addTokens(for: text, filePath: filePath)
         try parser.parse(tokenizer)
         var context = RunContext(script: parser.script)
-        print("context = \(context)")
         do {
             context.builtinCommands["output"] = PrintInstructionFunc
             for (key, value) in commands {
@@ -32,8 +31,10 @@ class HyperTalkTests: XCTestCase {
                 context.builtinFunctions[key] = value
             }
             try context.run("main", isCommand: true)
+        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+            throw RuntimeError.unknownMessage(name, isCommand: isCommand) // suppress log message below for common, obvious errors.
         } catch {
-            print("context = \(context)")
+            print("error = \(error) context = \(context)")
             throw error
         }
         if context.stack.count > 1 { throw RuntimeError.stackNotCleanedUpAtEndOfCall(exessElementCount: context.stack.count - 1) }
@@ -379,10 +380,10 @@ end main
         XCTAssertEqual(printInstructionOutput, "'yay!'\n")
     }
     
-    func testFunctionCall() throws {
+    func testFunctionCallAndConstants() throws {
         let (_, _, result) = try runScript("""
 function quoted str
-    return "'" & str & "'"
+    return quote & str & quote
 end quoted
 
 on main
@@ -391,7 +392,7 @@ end main
 """, filePath: #function)
         XCTAssertEqual(result, Variant())
 
-        XCTAssertEqual(printInstructionOutput, "'yay!'\n")
+        XCTAssertEqual(printInstructionOutput, "\"yay!\"\n")
     }
             
     func testUndefinedCommandCall() throws {
