@@ -362,4 +362,118 @@ end main
 
         XCTAssertEqual(printInstructionOutput, "")
     }
+        
+    func testCommandCallResult() throws {
+        let (_, _, result) = try runScript("""
+on quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    quoted "yay!"
+    output result
+end main
+""", filePath: #function)
+        XCTAssertEqual(result, Variant())
+
+        XCTAssertEqual(printInstructionOutput, "'yay!'\n")
+    }
+    
+    func testFunctionCall() throws {
+        let (_, _, result) = try runScript("""
+function quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    output quoted("yay!")
+end main
+""", filePath: #function)
+        XCTAssertEqual(result, Variant())
+
+        XCTAssertEqual(printInstructionOutput, "'yay!'\n")
+    }
+            
+    func testUndefinedCommandCall() throws {
+        do {
+            _ = try runScript("""
+on quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    fubar "yay!"
+    output result
+end main
+""", filePath: #function)
+            XCTFail("Expected an RuntimeError.unknownMessage exception")
+        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+            XCTAssertEqual(name, "fubar")
+            XCTAssertEqual(isCommand, true)
+        }
+
+        XCTAssertEqual(printInstructionOutput, "")
+    }
+    
+    func testUndefinedFunctionCall() throws {
+        do {
+            _ = try runScript("""
+function quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    output fubar("yay!")
+end main
+""", filePath: #function)
+            XCTFail("Expected an RuntimeError.unknownMessage exception")
+        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+            XCTAssertEqual(name, "fubar")
+            XCTAssertEqual(isCommand, false)
+        }
+
+        XCTAssertEqual(printInstructionOutput, "")
+    }
+    
+    func testSeparateFunctionCommandNamespaces() throws {
+        do {
+            _ = try runScript("""
+on quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    output quoted("yay!")
+end main
+""", filePath: #function)
+            XCTFail("Expected an RuntimeError.unknownMessage exception")
+        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+            XCTAssertEqual(name, "quoted")
+            XCTAssertEqual(isCommand, false)
+        }
+
+        XCTAssertEqual(printInstructionOutput, "")
+    }
+
+        
+    func testSeparateCommandFunctionNamespaces() throws {
+        do {
+            _ = try runScript("""
+function quoted str
+    return "'" & str & "'"
+end quoted
+
+on main
+    quoted "yay!"
+    output result
+end main
+""", filePath: #function)
+            XCTFail("Expected an RuntimeError.unknownMessage exception")
+        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+            XCTAssertEqual(name, "quoted")
+            XCTAssertEqual(isCommand, true)
+        }
+
+        XCTAssertEqual(printInstructionOutput, "")
+    }
 }
