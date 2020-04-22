@@ -119,7 +119,12 @@ public struct ReserveStackInstruction: Instruction, Equatable {
     let valueCount: Int
 }
 
+/// Push the property with the given name of the last element on the stack onto the stack in its place.
+public struct PushPropertyInstruction: Instruction, Equatable {
+    let name: String
+}
 
+/// Compare 2 instructions for equality. Useful for unit tests.
 public func equalInstructions<T: Instruction & Equatable>(_ left: Instruction, _ right: T) -> Bool {
     guard let left = left as? T else { return false }
     return left == right

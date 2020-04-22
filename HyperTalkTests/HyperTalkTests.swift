@@ -13,6 +13,21 @@ fileprivate func PrintInstructionFunc(_ args: [Variant], context: inout RunConte
     }
 }
 
+fileprivate func CreateInstructionFunc(_ args: [Variant], context: inout RunContext) throws {
+    if args.count < 1 {
+        throw RuntimeError.tooFewOperands
+    } else if args.count > 2 {
+        throw RuntimeError.tooManyOperands
+    }
+    
+    try printInstructionOutput.append("CREATE CALLED WITH: object type \"\(args[0].string(stack: context.stack))\"")
+    if args.count > 1 {
+        try printInstructionOutput.append(", name \"\(args[1].string(stack: context.stack))\"")
+    }
+    printInstructionOutput.append("\n")
+}
+
+
 class HyperTalkTests: XCTestCase {
     var tokenizer: Tokenizer!
     var parser: Parser!
@@ -31,8 +46,8 @@ class HyperTalkTests: XCTestCase {
                 context.builtinFunctions[key] = value
             }
             try context.run("main", isCommand: true)
-        } catch RuntimeError.unknownMessage(let name, let isCommand) {
-            throw RuntimeError.unknownMessage(name, isCommand: isCommand) // suppress log message below for common, obvious errors.
+//        } catch RuntimeError.unknownMessage(let name, let isCommand) {
+//            throw RuntimeError.unknownMessage(name, isCommand: isCommand) // suppress log message below for common, obvious errors.
         } catch {
             print("error = \(error) context = \(context)")
             throw error
@@ -407,7 +422,7 @@ on main
     output result
 end main
 """, filePath: #function)
-            XCTFail("Expected an RuntimeError.unknownMessage exception")
+            XCTFail("Expected a RuntimeError.unknownMessage exception")
         } catch RuntimeError.unknownMessage(let name, let isCommand) {
             XCTAssertEqual(name, "fubar")
             XCTAssertEqual(isCommand, true)
@@ -427,7 +442,7 @@ on main
     output fubar("yay!")
 end main
 """, filePath: #function)
-            XCTFail("Expected an RuntimeError.unknownMessage exception")
+            XCTFail("Expected a RuntimeError.unknownMessage exception")
         } catch RuntimeError.unknownMessage(let name, let isCommand) {
             XCTAssertEqual(name, "fubar")
             XCTAssertEqual(isCommand, false)
@@ -447,7 +462,7 @@ on main
     output quoted("yay!")
 end main
 """, filePath: #function)
-            XCTFail("Expected an RuntimeError.unknownMessage exception")
+            XCTFail("Expected a RuntimeError.unknownMessage exception")
         } catch RuntimeError.unknownMessage(let name, let isCommand) {
             XCTAssertEqual(name, "quoted")
             XCTAssertEqual(isCommand, false)
@@ -469,12 +484,33 @@ on main
     output result
 end main
 """, filePath: #function)
-            XCTFail("Expected an RuntimeError.unknownMessage exception")
+            XCTFail("Expected a RuntimeError.unknownMessage exception")
         } catch RuntimeError.unknownMessage(let name, let isCommand) {
             XCTAssertEqual(name, "quoted")
             XCTAssertEqual(isCommand, true)
         }
 
         XCTAssertEqual(printInstructionOutput, "")
+    }
+    
+    func testLengthProperty() throws {
+        let (_, _, result) = try runScript("""
+on main
+    return length of "Four"
+end main
+""", filePath: #function)
+        XCTAssertEqual(result, Variant(4))
+    }
+    
+    func testCreateCommand() throws {
+        let (_, _, result) = try runScript("""
+on main
+    create button "OK"
+    create field
+end main
+""", filePath: #function, commands: ["create": CreateInstructionFunc])
+        XCTAssertEqual(result, Variant())
+       
+        XCTAssertEqual(printInstructionOutput, "CREATE CALLED WITH: object type \"button\", name \"OK\"\nCREATE CALLED WITH: object type \"field\"\n")
     }
 }

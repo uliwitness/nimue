@@ -24,18 +24,7 @@ public enum VariantError: Error {
     case expectedNativeObject
 }
 
-class HyperTalkObject: Equatable {
-    let id: Int
-    
-    internal init(id: Int) {
-        self.id = id
-    }
-
-    static func == (lhs: HyperTalkObject, rhs: HyperTalkObject) -> Bool {
-        return lhs.id == rhs.id
-    }
-}
-
+/// Adapter to let us store weak references in the Value enum.
 struct WeakHolder: Equatable {
     weak var object: HyperTalkObject?
 }
@@ -305,6 +294,29 @@ public struct Variant: Equatable {
         }
         
         throw VariantError.expectedNativeObject
+    }
+
+    func hyperTalkPropertyValue(_ name: String, stack:  [Variant]) throws -> Variant {
+        if case let .nativeObject(object) = value {
+            return try object.hyperTalkPropertyValue(name)
+        } else if case let .weakNativeObject(object) = value {
+            guard let object = object.object else { throw RuntimeError.objectDoesNotExist }
+            return try object.hyperTalkPropertyValue(name)
+        } else if name == "length" {
+            return try Variant(string(stack: stack).count)
+        } else {
+            throw RuntimeError.unknownProperty(name)
+        }
+    }
+    
+    func setHyperTalkProperty(_ name: String, to newValue: Variant, stack: inout [Variant]) throws {
+        if case let .nativeObject(object) = value {
+            return try object.setHyperTalkProperty(name, to: newValue)
+        } else if name == "length" {
+            throw RuntimeError.cantChangeReadOnlyProperty(name)
+        } else {
+            throw RuntimeError.unknownProperty(name)
+        }
     }
 
     /// Create an unset value, an empty string that can be detected as never having been set to a value (sort-of equivalent to NIL in Objective-C).

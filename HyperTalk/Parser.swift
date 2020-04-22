@@ -4,6 +4,7 @@ enum ParserValueKind {
     case none
     case expression
     case container
+    case anyIdentifier
     case identifier(expected: [String])
 }
 
@@ -142,6 +143,10 @@ public class Parser {
         Syntax(identifiers: ["subtract"], parameters: [
             SyntaxElement(identifiers: [], valueKind: .expression),
             SyntaxElement(identifiers: ["from"], valueKind: .container)
+        ]),
+        Syntax(identifiers: ["create"], parameters: [
+            SyntaxElement(identifiers: [], valueKind: .anyIdentifier),
+            SyntaxElement(identifiers: [], valueKind: .expression, required: false)
         ])
     ]
     public var constants: [String: Instruction] = [
@@ -168,9 +173,14 @@ public class Parser {
         } else if let identStr = tokenizer.hasIdentifier(updateCurrentIndexOnMatch: true) {
             if let foundConstantInstruction = constants[identStr] {
                 instructions.append(foundConstantInstruction)
-            } else if tokenizer.hasSymbol("(", updateCurrentIndexOnMatch: true) != nil { // Function call
+            } else if tokenizer.hasSymbol("(", updateCurrentIndexOnMatch: true) != nil { // Function call.
                 try parseGenericHandlerCall(handlerName: identStr, isCommand: false, tokenizer: tokenizer, instructions: &instructions, variables: &variables)
                 try tokenizer.expectSymbol(")")
+            } else if tokenizer.hasIdentifier("of", updateCurrentIndexOnMatch: true) != nil { // Property expression.
+                var objectInstructions = [Instruction]()
+                guard try parseValue(tokenizer: tokenizer, instructions: &objectInstructions, variables: &variables) else { throw ParseError.expectedValue(token: tokenizer.currentToken) }
+                instructions.append(contentsOf: objectInstructions)
+                instructions.append(PushPropertyInstruction(name: identStr))
             } else {
                 if let identInstr = variables.mappings[identStr] {
                     instructions.append(identInstr)
@@ -348,6 +358,14 @@ public class Parser {
                     } else {
                         expected.reversed().forEach { valueInstructions.append(PushStringInstruction(string: $0)) }
                         paramCount += expected.count
+                    }
+                case .anyIdentifier:
+                    if case let Token.Kind.unquotedString(identifierName) = tokenizer.currentToken?.kind ?? Token.Kind.integer(0) {
+                        tokenizer.currentIndex += 1
+                        valueInstructions.append(PushStringInstruction(string: identifierName))
+                        paramCount += 1
+                    } else {
+                        matchedAllParams = false
                     }
                 case .none:
                     break

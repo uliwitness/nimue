@@ -16,6 +16,14 @@
 		558A684623E5EC6E008266C0 /* Variant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5597179E23E0201E00C49992 /* Variant.swift */; };
 		558A684823E5F20D008266C0 /* HyperTalk.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; };
 		558A684923E5F20D008266C0 /* HyperTalk.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 558A682B23E5EC61008266C0 /* HyperTalk.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		55A34384244BE63D0005FC80 /* HyperTalkObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34383244BE63D0005FC80 /* HyperTalkObject.swift */; };
+		55A34386244BEB480005FC80 /* BuiltInHandlerFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34385244BEB480005FC80 /* BuiltInHandlerFunctions.swift */; };
+		55A34388244BEB8D0005FC80 /* RunContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34387244BEB8D0005FC80 /* RunContext.swift */; };
+		55A3438A244BEBE50005FC80 /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34389244BEBE50005FC80 /* RuntimeError.swift */; };
+		55A3438B244BEBF30005FC80 /* RunContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34387244BEB8D0005FC80 /* RunContext.swift */; };
+		55A3438C244BEBF70005FC80 /* RuntimeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34389244BEBE50005FC80 /* RuntimeError.swift */; };
+		55A3438D244BEC000005FC80 /* HyperTalkObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34383244BE63D0005FC80 /* HyperTalkObject.swift */; };
+		55A3438E244BEC030005FC80 /* BuiltInHandlerFunctions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55A34385244BEB480005FC80 /* BuiltInHandlerFunctions.swift */; };
 		55DF001D23DBCB97008700DA /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DF001C23DBCB97008700DA /* main.swift */; };
 		55DF002423DBD8BE008700DA /* example1.nim in CopyFiles */ = {isa = PBXBuildFile; fileRef = 55DF002323DBD884008700DA /* example1.nim */; };
 		55EBAECB24469AD20092F139 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55EBAECA24469AD20092F139 /* AppDelegate.swift */; };
@@ -128,6 +136,10 @@
 		5595A36D23E01F6500A4A672 /* BaseInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseInstructions.swift; sourceTree = "<group>"; };
 		5597179E23E0201E00C49992 /* Variant.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Variant.swift; sourceTree = "<group>"; };
 		559717A023E020A200C49992 /* BaseRunnableInstructions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseRunnableInstructions.swift; sourceTree = "<group>"; };
+		55A34383244BE63D0005FC80 /* HyperTalkObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HyperTalkObject.swift; sourceTree = "<group>"; };
+		55A34385244BEB480005FC80 /* BuiltInHandlerFunctions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuiltInHandlerFunctions.swift; sourceTree = "<group>"; };
+		55A34387244BEB8D0005FC80 /* RunContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunContext.swift; sourceTree = "<group>"; };
+		55A34389244BEBE50005FC80 /* RuntimeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuntimeError.swift; sourceTree = "<group>"; };
 		55DF001923DBCB97008700DA /* nimue */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nimue; sourceTree = BUILT_PRODUCTS_DIR; };
 		55DF001C23DBCB97008700DA /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		55DF002323DBD884008700DA /* example1.nim */ = {isa = PBXFileReference; lastKnownFileType = text; path = example1.nim; sourceTree = "<group>"; };
@@ -214,7 +226,11 @@
 				5584237223E0E5E7006F3FF3 /* Parser.swift */,
 				5595A36D23E01F6500A4A672 /* BaseInstructions.swift */,
 				559717A023E020A200C49992 /* BaseRunnableInstructions.swift */,
+				55A34389244BEBE50005FC80 /* RuntimeError.swift */,
+				55A34387244BEB8D0005FC80 /* RunContext.swift */,
 				5597179E23E0201E00C49992 /* Variant.swift */,
+				55A34383244BE63D0005FC80 /* HyperTalkObject.swift */,
+				55A34385244BEB480005FC80 /* BuiltInHandlerFunctions.swift */,
 				558A682E23E5EC61008266C0 /* Info.plist */,
 			);
 			path = HyperTalk;
@@ -579,7 +595,11 @@
 			files = (
 				558A684523E5EC6E008266C0 /* BaseRunnableInstructions.swift in Sources */,
 				558A684323E5EC6E008266C0 /* Parser.swift in Sources */,
+				55A34384244BE63D0005FC80 /* HyperTalkObject.swift in Sources */,
+				55A3438A244BEBE50005FC80 /* RuntimeError.swift in Sources */,
 				558A684223E5EC6E008266C0 /* Tokenizer.swift in Sources */,
+				55A34386244BEB480005FC80 /* BuiltInHandlerFunctions.swift in Sources */,
+				55A34388244BEB8D0005FC80 /* RunContext.swift in Sources */,
 				558A684623E5EC6E008266C0 /* Variant.swift in Sources */,
 				558A684423E5EC6E008266C0 /* BaseInstructions.swift in Sources */,
 			);
@@ -625,9 +645,13 @@
 			files = (
 				55EBAF142446A0000092F139 /* BaseRunnableInstructions.swift in Sources */,
 				55EBAF122446A0000092F139 /* Parser.swift in Sources */,
+				55A3438C244BEBF70005FC80 /* RuntimeError.swift in Sources */,
+				55A3438D244BEC000005FC80 /* HyperTalkObject.swift in Sources */,
 				55EBAF112446A0000092F139 /* Tokenizer.swift in Sources */,
 				55EBAF152446A0000092F139 /* Variant.swift in Sources */,
 				55EBAF132446A0000092F139 /* BaseInstructions.swift in Sources */,
+				55A3438E244BEC030005FC80 /* BuiltInHandlerFunctions.swift in Sources */,
+				55A3438B244BEBF30005FC80 /* RunContext.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
